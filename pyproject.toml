@@ -1,0 +1,71 @@
+[project]
+name = "mini"
+authors = [{name = "jai", email = "jkbhagatio@gmail.com"}]
+description = "Mech Interp for Neural Interp"
+requires-python = "==3.9"
+version = "0.1.0"
+dependencies = []
+
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling"]
+
+[tool.pixi.project]
+channels = ["conda-forge"]
+platforms = ["win-64"]  # for linux: "linux-64"
+
+[tool.pixi.pypi-options]
+extra-index-urls = [
+    "https://download.pytorch.org/whl/cu121", 
+    "https://storage.googleapis.com/jax-releases/jax_cuda_releases.html"
+]
+
+[tool.pixi.pypi-dependencies]
+allensdk = { version = ">=2.16" }
+jax = { version = "==0.4.21" }  # for linux: "==0.4.28+cuda12"
+jaxlib = { version = "==0.4.21" }  # for linux: remove jaxlib dep (will be installed with jax)
+pip = "*"
+sortedcontainers = "*"
+torch = { version = "==2.5.1+cu121" }
+torchinfo = "*"
+torchtext = "*"
+torchvision = { version = "==0.20.1+cu121" }
+wandb = "*"
+#eindex = {git = "https://github.com/callummcdougall/eindex.git"}
+#neel-plotly = {git = "https://github.com/neelnanda-io/neel-plotly"}
+
+[tool.pixi.dependencies]
+datasets = { version = ">=2.14.6" }
+einops = "*"
+huggingface_hub = "*"
+ipdb = "*"
+ipykernel = "*"
+jaxtyping = "*"
+jupyter = "*"
+matplotlib = "*"
+numpy = { version = "<1.24" }
+openai = "*"
+pandas = { version = "==1.5.3" }
+plotly = { version = ">=5.23.0,<6" }
+pyright = "*"
+pytest = "*"
+scikit-learn = "*"
+scipy = { version = "<1.11" }
+tensorboard = "*"
+tiktoken = "*"
+transformers = "*"
+tqdm = "*"
+typeguard = "*"
+rich = "*"
+ruff = "*"
+
+[tool.pixi.tasks]
+
+[tool.ruff]
+line-length = 99
+lint.ignore = [
+    "F722",  # syntax error in forward declaration
+    "E201",  # whitespace after '('
+    "E202",  # whitespace before ')'
+    "E203",  # whitespace before ':'
+]

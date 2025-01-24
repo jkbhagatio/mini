@@ -1,0 +1,10 @@
+version: 2
+updates:
+  - package-ecosystem: "pip" # Dependabot works with pip
+    directory: "/"          # Root directory of your repository
+    schedule:
+      interval: "weekly"     # Check for updates daily
+    # ignore:                # Ignore updates for certain dependencies
+    commit-message:
+      prefix: "deps"
+      include: true
