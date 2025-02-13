@@ -24,6 +24,7 @@ extra-index-urls = [
 allensdk = { version = ">=2.16" }
 jax = { version = "==0.4.21" }  # for linux: "==0.4.28+cuda12"
 jaxlib = { version = "==0.4.21" }  # for linux: remove jaxlib dep (will be installed with jax)
+optuna = "*"
 pip = "*"
 sortedcontainers = "*"
 torch = { version = "==2.5.1+cu121" }
