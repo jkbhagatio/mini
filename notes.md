@@ -21,7 +21,7 @@ Some notes on things we've tried or have thought about trying. Coud be useful fo
 
 - Batch-TopK
 
-    - Seems to work well! Using this as default
+    - Seems to work well! Using this as default as we don't have to tune sparsity coefficient and explicitly normalize decoder weights on each step.
 
 - Gated
 
@@ -47,11 +47,7 @@ Some notes on things we've tried or have thought about trying. Coud be useful fo
 
             - Can add a small epsilon term, but what this exact value to be is tricky, and then we're being a bit unfaithful to the actual spike data.
 
-        - Need to force reconstructions to be non-negative, (with ReLU or Softplus), which made it harder to train, and always got worse performance than with MSE or LMSE.
-
-- Tanh loss
-
-    - Seems to work as well as LMSE, but may not be worth using because of overheading of tuning additional hyperparms (`A` and `B`).
+        - Seemingly always performed worse than MSE and LMSE.
 
 ### Sparsity-penalty loss (for non Batch-TopK and Jump-ReLU SAEs)
 
@@ -62,6 +58,10 @@ Some notes on things we've tried or have thought about trying. Coud be useful fo
 - L1-decoder-norm
 
     - Seems to work a little better than L1-standard!
+
+- Tanh
+
+    - Haven't really tried it yet, may not be worth using because of overhead of tuning additional hyperparms (`A` and `B`).
 
 - Sparsity coefficient schedule:
 
@@ -100,17 +100,29 @@ Some notes on things we've tried or have thought about trying. Coud be useful fo
 
 ### Timebin size
 
-Ideally, we want as small as possible, without the data becoming too sparse. 50 ms seems to give about 0.8 sparsity per unit with average unit firing rate of X. This seems decent and is similar to 100 ms timebins, so went with this.
+Ideally, we want as small as possible, without the data becoming too sparse. 50 ms seems to give about 0.8 sparsity per unit with average unit firing rate of ~ 10 Hz. This seems decent and is similar to 100 ms timebins, so went with this.
 
 ### Unit preprocessing
 
 Ideally we'll have clean units. We used ks3.5 labeled good untis and had an additional step of removing neurons with high isi_violations at 2 ms (> 0.1, a sign of contamination), and low firing rates (< 0.5 Hz)
 
-### Relative input-to-output size
+### Sequence length
 
-Right now, we take one timebin in, and try to reconstruct the same timebin. Have thought about taking multiple timebins in, and only trying to reconstruct the final timebin, because longer spiking history may be meaningful for reconstruction / prediction, but haven't tried this yet.
+Right now, we take one timebin in, and try to reconstruct the same timebin. We could also take multiple timebins in, and only trying to reconstruct the final timebin, because longer spiking history may be meaningful for reconstruction / prediction. Have the code for this and have tested it, but haven't gotten good results with seq_len > 1. Probably worth looking more into.
+
+## Methods to compare vs. MINI
+
+### PCA
+
+### LFADS
+
+### CEBRA
+
+### sliceTCA
 
 ## General notes
+
+- We need to set default SAE hyperparams (or even range of hyperparams for a small sweep) as a function of units and examples.
 
 - Generally 3 phases during SAE training:
 
