@@ -114,6 +114,8 @@ Right now, we take one timebin in, and try to reconstruct the same timebin. We c
 
 ### PCA
 
+### (Sparse) NMF
+
 ### LFADS
 
 ### CEBRA
