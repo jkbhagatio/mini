@@ -6,3 +6,5 @@ __pycache__/
 *.code-workspace
 .pixi/
 data/
+wandb/
+slurm_logs/
