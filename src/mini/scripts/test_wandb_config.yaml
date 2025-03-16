@@ -1,0 +1,52 @@
+# method: bayes
+method: grid
+name: SANe_allen_732592105_sweep
+metric:
+  name: loss
+  goal: minimize
+wandb_config:
+  entity: jkbhagatio
+  project: MINI
+sweep_config:
+  n_runs: 100
+# slurm_config:
+#   slurm_job_name: SANe_allen_732592105_sweep
+#   log_dir: /nfs/nhome/live/jkbhagatio/mini/slurm_logs
+#   slurm_partition: gpu_branco
+#   nodelist: gpu-sr675-32
+#   tasks_per_node: 4
+#   gpus_per_task: 1
+#   cpus_per_task: 8
+#   mem_gb: 128
+parameters:
+  d_sae:
+    # values: [4096, 8192, 16384, 32768, 65536]
+    values: [4096, 8192, 16384, 32768]
+  top_k:
+    # values: [16, 32, 64, 128, 256]
+    values: [16, 32, 64, 128]
+  # lr:
+  #   min: 1.0e-4
+  #   max: 5.0e-3
+  #   distribution: log_uniform_values
+  lr:
+    # values: [1e-4, 5e-4, 1e-3, 5e-3]
+    # values: [1e-4, 8e-4, 1.5e-3, 2.2e-3, 2.9e-3, 3.6e-3, 4.3e-3, 5e-3]  # linspaced
+    values: [1e-4, 1.8e-4, 3.1e-4, 5.3e-4, 9.4e-4, 1.6e-3, 2.9e-3, 5e-3]  # logspaced
+  loss_fn:
+    values: [lmse_0.9, lmse_1.0, lmse_1.1]
+  n_instances:
+    values: [2]
+  seq_len:
+    values: [1]
+  batch_size:
+    values: [1024]
+  epochs:
+    values: [30]
+  use_lr_sched:
+    values: [true]
+# early_terminate:
+#   type: hyperband
+#   s: 0
+#   min_iter: 34
+#   eta: 3

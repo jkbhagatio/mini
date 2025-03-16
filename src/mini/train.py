@@ -80,8 +80,8 @@ class Sae(nn.Module):
         final_resample_step: int,
         frac_active_thresh: float = 1e-3,  # fraction of time a neuron needs to be active to be alive
         resample_thresh: float = 0.1  # threshold of fraction of dead neurons, above which we resample
-    ):
-        """Resamples dead neurons according to `frac_active`."""
+    ) -> float:
+        """Resamples dead neurons according to `frac_active`, returns frac_dead."""
         # Get a tensor of dead neurons.
         dead_features_mask = frac_active < frac_active_thresh
         n_dead = dead_features_mask.sum().item()
@@ -113,9 +113,11 @@ class Sae(nn.Module):
             rearrange(self.W_enc[..., :self.cfg.n_input_ae], "inst h_ae in_ae -> inst in_ae h_ae")
         )
         self.b_enc[dead_features_mask].fill_(0.0)
+
+        return frac_dead
     
     @t.no_grad()
-    def normalize_decoder(self: Sae):
+    def normalize_decoder(self):
         """Unit norms the decoder weights."""
         self.W_dec.data = self.W_dec.data / (self.W_dec.data.norm(dim=1, keepdim=True) + 1e-6)
 
@@ -186,7 +188,7 @@ def tanh_loss(
 
 # </ss>
 
-def simple_cosyne_lr_sched(step: int, n_steps: int, initial_lr: float, min_lr: float):
+def simple_cosine_lr_sched(step: int, n_steps: int, initial_lr: float, min_lr: float):
     """Learning rate schedule with warmup, decay and cosyne cycle."""
     n_warmup_steps = int(n_steps * 0.1)
     decay_start_step = int(n_steps * 0.5)
@@ -260,7 +262,7 @@ def optimize(
 
         if use_lr_sched:
             optimizer.param_groups[0]["lr"] = (
-                simple_cosyne_lr_sched(step, n_steps, init_lr, min_lr)
+                simple_cosine_lr_sched(step, n_steps, init_lr, min_lr)
             )
 
         # Get batch of spike counts to feed into SAE.

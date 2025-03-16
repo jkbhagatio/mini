@@ -37,7 +37,7 @@ Some notes on things we've tried or have thought about trying. Coud be useful fo
 
 - LMSE
 
-    - Seems to work a bit better than MSE! Using this as default
+    - Seems to work well! Sometimes better, sometimes worse than MSE, depends on `tau` hyperparameter.
 
 - PKL
 
@@ -126,8 +126,11 @@ Right now, we take one timebin in, and try to reconstruct the same timebin. We c
 
 - We need to set default SAE hyperparams (or even range of hyperparams for a small sweep) as a function of units and examples.
 
-- Generally 3 phases during SAE training:
+    - *Note*: after some initial sweeps over (`d_sae`, `lr`, `lr_sched`, `loss_fn`, and `topk`), we found that `lr_sched=True` and `loss_fn` as some variant of `lmse` always outperformed other alternatives for these hyperparams. So we can probably just set these as defaults, and just sweep over `d_sae`, `lr`, and `topk`, and `tau` for lmse for given datasets.
+
+- Generally 3 phases that occur during SAE training:
 
     1. Initial representation: Features are unspecialized, capturing general patterns
     2. Specialization: Features begin to capture specific patterns, sparsity increases
     3. Fine-tuning: Minor adjustments to specialized features for optimal reconstruction
+

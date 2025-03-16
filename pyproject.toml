@@ -21,6 +21,7 @@ extra-index-urls = [
 ]
 
 [tool.pixi.pypi-dependencies]
+mini = { path = "." , editable = true }
 allensdk = { version = ">=2.16" }
 jax = { version = "==0.4.21" }  # for linux: "==0.4.28+cuda12"
 jaxlib = { version = "==0.4.21" }  # for linux: remove jaxlib dep (will be installed with jax)
@@ -28,6 +29,7 @@ optuna = "*"
 pip = "*"
 sortedcontainers = "*"
 torch = { version = "==2.5.1+cu121" }
+torcheval = "*"
 torchinfo = "*"
 torchtext = "*"
 torchvision = { version = "==0.20.1+cu121" }
@@ -52,6 +54,8 @@ pyright = "*"
 pytest = "*"
 scikit-learn = "*"
 scipy = { version = "<1.11" }
+seaborn = "*"
+submitit = "*"
 tensorboard = "*"
 tiktoken = "*"
 transformers = "*"
