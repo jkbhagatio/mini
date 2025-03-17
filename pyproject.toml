@@ -12,7 +12,7 @@ requires = ["hatchling"]
 
 [tool.pixi.project]
 channels = ["conda-forge"]
-platforms = ["win-64"]  # for linux: "linux-64"
+platforms = ["linux-64", "win-64"]
 
 [tool.pixi.pypi-options]
 extra-index-urls = [
@@ -23,9 +23,7 @@ extra-index-urls = [
 [tool.pixi.pypi-dependencies]
 mini = { path = "." , editable = true }
 allensdk = { version = ">=2.16" }
-jax = { version = "==0.4.21" }  # for linux: "==0.4.28+cuda12"
-jaxlib = { version = "==0.4.21" }  # for linux: remove jaxlib dep (will be installed with jax)
-optuna = "*"
+jax = { version = ">=0.4.21" }
 pip = "*"
 sortedcontainers = "*"
 torch = { version = "==2.5.1+cu121" }
@@ -34,8 +32,6 @@ torchinfo = "*"
 torchtext = "*"
 torchvision = { version = "==0.20.1+cu121" }
 wandb = "*"
-#eindex = {git = "https://github.com/callummcdougall/eindex.git"}
-#neel-plotly = {git = "https://github.com/neelnanda-io/neel-plotly"}
 
 [tool.pixi.dependencies]
 datasets = { version = ">=2.14.6" }
@@ -56,9 +52,6 @@ scikit-learn = "*"
 scipy = { version = "<1.11" }
 seaborn = "*"
 submitit = "*"
-tensorboard = "*"
-tiktoken = "*"
-transformers = "*"
 tqdm = "*"
 typeguard = "*"
 rich = "*"
