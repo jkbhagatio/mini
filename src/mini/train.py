@@ -134,7 +134,7 @@ def mse(
     """Computes the mean squared error loss between true input and reconstruction."""
     return reduce((x - x_prime).pow(2), "batch inst in_ae -> batch inst", "mean")
 
-def lmse(
+def msle(
     x: Float[Tensor, "batch inst in_ae"],  # input
     x_prime: Float[Tensor, "batch inst in_ae"],  # reconstruction
     tau: int = 1,  # relative overestimation/underestimation penalty (1 for symmetric)
@@ -274,9 +274,9 @@ def optimize(
         optimizer.zero_grad()
         spike_count_recon, h = model(spike_count_seqs)
 
-        # Example lmse loss, no l1 loss.
+        # Example msle loss, no l1 loss.
         # take loss between reconstructions and last timebin (sequence) of spike_count_seqs.
-        loss = lmse(spike_count_seqs[..., -1, :], spike_count_recon, tau=1)
+        loss = msle(spike_count_seqs[..., -1, :], spike_count_recon, tau=1)
         loss = reduce(loss, "batch inst -> ", "mean")
 
         # Example mse loss, no l1 loss.

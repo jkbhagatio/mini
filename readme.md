@@ -12,7 +12,9 @@ Prerequisites:
 
 - An installed version of [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html)
 
-In the root directory, just run `pixi install --manifest ./pyproject.toml` - this will create a conda env named 'mini'.
+- An installed version of [pixi](https://pixi.sh/latest/)
+
+In the root directory, just run `pixi install --manifest-path ./pyproject.toml` - this will create a conda env named 'mini'.
 
 ### Other
 

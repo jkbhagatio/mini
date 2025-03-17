@@ -31,7 +31,7 @@ def optimize(
     model: mt.Sae,
     seq_len: int,  # number of timebins to use in each spike_count_seq
     loss_fn: Callable,
-    lmse_tau: float,
+    msle_tau: float,
     lr: float,
     use_lr_sched: bool,
     neuron_resample_window: int,  # in number of steps
@@ -94,8 +94,8 @@ def optimize(
         # take loss between reconstructions and last timebin (sequence) of spike_count_seqs
         if loss_fn == mt.mse:
             loss = loss_fn(spike_count_seqs[..., -1, :], spike_count_recon)
-        elif loss_fn == mt.lmse:
-            loss = loss_fn(spike_count_seqs[..., -1, :], spike_count_recon, tau=lmse_tau)
+        elif loss_fn == mt.msle:
+            loss = loss_fn(spike_count_seqs[..., -1, :], spike_count_recon, tau=msle_tau)
         else:
             raise ValueError(f"Invalid loss function: {loss_fn}")
         loss = reduce(loss, "batch inst -> ", "mean")   
@@ -419,10 +419,10 @@ def wandb_run(
     # Set loss function according to current run config
     if "mse" in wandb.config.loss_fn:
         loss_fn = mt.mse
-        lmse_tau = 0.0  # not used
-    elif "lmse" in wandb.config.loss_fn:
-        loss_fn = mt.lmse
-        lmse_tau = float(wandb.config.loss_fn.split("_")[-1])
+        msle_tau = 0.0  # not used
+    elif "msle" in wandb.config.loss_fn:
+        loss_fn = mt.msle
+        msle_tau = float(wandb.config.loss_fn.split("_")[-1])
     
     # Train SAE with current run config
     sae = mt.Sae(sae_cfg).to(device)
@@ -431,7 +431,7 @@ def wandb_run(
         model=sae,
         seq_len=sae_cfg.seq_len,
         loss_fn=loss_fn,
-        lmse_tau=lmse_tau,
+        msle_tau=msle_tau,
         lr=wandb.config.lr,
         use_lr_sched=wandb.config.use_lr_sched,
         neuron_resample_window=neuron_resample_window,
