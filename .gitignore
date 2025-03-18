@@ -1,10 +1,10 @@
 __pycache__/
 *.pyc
 *.egg-info
-.vscode/
 .ipynb_checkpoints/
+.vscode/
 *.code-workspace
 .pixi/
-data/
 wandb/
+data/
 slurm_logs/
