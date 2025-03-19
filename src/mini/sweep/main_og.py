@@ -19,6 +19,7 @@ from pathlib import Path
 import pandas as pd
 import submitit
 import torch as t
+import wandb
 import yaml
 
 from mini import train as mt
