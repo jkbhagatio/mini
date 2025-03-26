@@ -4,12 +4,21 @@ import math
 from dataclasses import dataclass
 from typing import Optional, Tuple
 
+import numpy as np
+import pandas as pd
 import torch as t
-from einops import einsum, rearrange, reduce, repeat
+import wandb
+from einops import asnumpy, einsum, rearrange, reduce, repeat
 from jaxtyping import Float, Int
+from matplotlib import pyplot as plt
+import seaborn as sns
+from sklearn.metrics import r2_score
 from torch import bfloat16, nn, Tensor
 from torch.nn import functional as F
-from tqdm.notebook import tqdm
+from tqdm import tqdm
+
+from mini import plot as mp
+from mini.util import vec_r2
 
 # <s> SAE class config
 
@@ -17,7 +26,7 @@ from tqdm.notebook import tqdm
 class SaeConfig:
     """Config class to set some params for SAE."""
     n_input_ae: int  # number of input units to the autoencoder
-    n_hidden_ae: int  # number of h_ae units in the autoencoder
+    n_hidden_ae: int  # number of hidden units in the autoencoder
     seq_len: int = 1  # number of time bins in a sequence
     n_instances: int = 2  # number of model instances to optimize in parallel
     topk: Optional[int] = None  # avg num of contributing sae features per example in a batch
@@ -78,10 +87,12 @@ class Sae(nn.Module):
         frac_active: Float[Tensor, "inst hidden_ae"],
         step: int,
         final_resample_step: int,
-        frac_active_thresh: float = 1e-3,  # fraction of time a neuron needs to be active to be alive
-        resample_thresh: float = 0.1  # threshold of fraction of dead neurons, above which we resample
+        # fraction of examples a neuron needs to be active to be alive
+        frac_active_thresh: float = 1e-3,
+        # threshold of fraction of dead neurons, above which we resample
+        resample_thresh: float = 0.1
     ) -> float:
-        """Resamples dead neurons according to `frac_active`, returns frac_dead."""
+        """Resamples dead neurons according to `frac_active`, returns the fraction dead."""
         # Get a tensor of dead neurons.
         dead_features_mask = frac_active < frac_active_thresh
         n_dead = dead_features_mask.sum().item()
@@ -90,9 +101,10 @@ class Sae(nn.Module):
 
         if (frac_dead < resample_thresh) or (step > final_resample_step):
             print()
-            return
+            return frac_dead
 
         print(";  Resampling neurons.")
+        
         # Create new weights
         replacements = t.randn(
             (n_dead, self.cfg.n_input_ae * self.cfg.seq_len), 
@@ -134,7 +146,7 @@ def mse(
     """Computes the mean squared error loss between true input and reconstruction."""
     return reduce((x - x_prime).pow(2), "batch inst in_ae -> batch inst", "mean")
 
-def lmse(
+def msle(
     x: Float[Tensor, "batch inst in_ae"],  # input
     x_prime: Float[Tensor, "batch inst in_ae"],  # reconstruction
     tau: int = 1,  # relative overestimation/underestimation penalty (1 for symmetric)
@@ -216,89 +228,84 @@ def simple_cosine_lr_sched(step: int, n_steps: int, initial_lr: float, min_lr: f
 
 
 def optimize(
+    spk_cts: Int[Tensor, "n_examples n_units"],
     model: Sae,
-    optimizer: t.optim.Optimizer,
-    spike_counts: Int[Tensor, "n_examples n_units"],
+    seq_len: int,  # number of timebins to use in each spike_count_seq
+    loss_fn: str,
+    lr: float,
+    use_lr_sched: bool,
+    neuron_resample_window: int,  # in number of steps
     batch_sz: int,
     n_steps: int,
     log_freq: int,
-    seq_len: int,  # number of timebins to use in each spike_count_seq
-    use_lr_sched: bool = False,
-    neuron_resample_window: Optional[int] = None,  # in number of steps
+    log_wandb: bool = False,
+    plot_l0: bool = False
 ):
     """Optimizes the autoencoder using the given hyperparameters."""
-    # Create lists to store data we'll eventually be plotting.
+    # Create lists to store data we"ll eventually be plotting.
     frac_active_all_steps = []  # fraction of non-zero activations for each neuron (feature)
+    l0_history = []  # history of l0 mean and std for each step
     data_log = {
         "frac_active": {},
         "loss": {},
         "l0": {}
     }
+    frac_dead = None
 
-    # Define valid samples for `spike_counts`.
-    n_examples, _n_units = spike_counts.shape
+    # Define valid samples for `spk_cts`.
+    n_examples, _n_units = spk_cts.shape
     valid_starts = n_examples - seq_len + 1
 
+    # Define the optimizer.
+    optimizer = t.optim.Adam(model.parameters(), lr=lr)
     if use_lr_sched:
-        init_lr = optimizer.param_groups[0]["lr"]
-        min_lr = init_lr * 1e-2
+        min_lr = lr * 1e-2
 
-    pbar = tqdm(range(n_steps))
+    # Set `tau` for msle loss if needed.
+    tau = float(loss_fn.split("_")[-1]) if "msle" in loss_fn else 0.0
+
+    # Loop over the data.
+    pbar = tqdm(range(n_steps), desc="SAE batch training step")
     for step in pbar:
+        
         # Check for dead neurons and resample them if found.
-        if (neuron_resample_window is not None)  and ((step + 1) % neuron_resample_window == 0):
+        if (neuron_resample_window is not None) and ((step + 1) % neuron_resample_window == 0):
             frac_active_in_window = reduce(
                 t.stack(frac_active_all_steps[-neuron_resample_window:], dim=0),
                 "window inst hidden_ae -> inst hidden_ae", 
                 "mean"
             )
             data_log["frac_active"][step] = frac_active_in_window.detach().cpu()
-            model.resample_neurons(
+            frac_dead = model.resample_neurons(
                 frac_active_in_window, 
                 step, 
                 final_resample_step=(n_steps // 2),
-                frac_active_thresh=(1 / model.cfg.n_hidden_ae)
+                frac_active_thresh=5e-5
+                # frac_active_thresh=(1 / model.cfg.n_hidden_ae)
             )
 
+        # Update lr.
         if use_lr_sched:
             optimizer.param_groups[0]["lr"] = (
-                simple_cosine_lr_sched(step, n_steps, init_lr, min_lr)
+                simple_cosine_lr_sched(step, n_steps, lr, min_lr)
             )
 
         # Get batch of spike counts to feed into SAE.
         start_idxs = t.randint(0, valid_starts, (batch_sz, model.cfg.n_instances))
         seq_idxs = start_idxs.unsqueeze(-1) + t.arange(seq_len)  # broadcast seq idxs to new dim
-        spike_count_seqs = spike_counts[seq_idxs]  # [batch_sz, n_instances, seq_len, n_units]
+        spike_count_seqs = spk_cts[seq_idxs]  # [batch_sz, n_instances, seq_len, n_units]
 
         # Optimize.
         optimizer.zero_grad()
         spike_count_recon, h = model(spike_count_seqs)
-
-        # Example lmse loss, no l1 loss.
-        # take loss between reconstructions and last timebin (sequence) of spike_count_seqs.
-        loss = lmse(spike_count_seqs[..., -1, :], spike_count_recon, tau=1)
-        loss = reduce(loss, "batch inst -> ", "mean")
-
-        # Example mse loss, no l1 loss.
-        # loss = mse(spike_count_seqs, spike_count_recon)
-        # loss = reduce(loss, "batch inst -> ", "mean")
-        
-        # Example mse loss with vanilla-l1-loss.
-        # l1_loss_val = l1_loss(z, lamda=5e-4)
-        # l2_loss_val = mse(spike_count_seqs, spike_count_recon)
-        # loss = reduce(l1_loss_val + l2_loss_val, "batch inst -> ", "mean")
-        # model.normalize_decoder()
-
-        # Example mse loss with decoder-norm-l1-loss.
-        # l1_loss_val = l1_loss_decoder_norm(z, model.W_dec, lamda=5e-4)
-        # l2_loss_val = mse(spike_count_seqs, spike_count_recon)
-        # loss = reduce(l1_loss_val + l2_loss_val, "batch inst -> ", "mean")
-
-        # Example mse loss with tanh-l1-loss.
-        # l1_loss_val = tanh_loss(z, model.W_dec, lamda=5e-4, A=1.0, B=0.2)
-        # l2_loss_val = mse(spike_count_seqs, spike_count_recon)
-        # loss = reduce(l1_loss_val + l2_loss_val, "batch inst -> ", "mean")
-        
+        # take loss between reconstructions and last timebin (sequence) of spike_count_seqs
+        if loss_fn == "mse":
+            loss = mse(spike_count_seqs[..., -1, :], spike_count_recon)
+        elif "msle" in loss_fn:
+            loss = msle(spike_count_seqs[..., -1, :], spike_count_recon, tau=tau)
+        else:
+            raise ValueError(f"Invalid loss function: {loss_fn}")
+        loss = reduce(loss, "batch inst -> ", "mean")   
         loss.backward()
         optimizer.step()
 
@@ -313,84 +320,219 @@ def optimize(
             l0 = reduce((h.abs() > 1e-6).float(), "batch inst hidden_ae -> batch inst", "sum")
             l0_mean, l0_std = l0.mean().item(), l0.std().item()
             pbar.set_postfix(loss=f"{loss.item():.5f},  {l0_mean=}, {l0_std=}")
-            data_log["l0"][step] = l0
+            data_log["l0"][step] = {"mean": l0_mean, "std": l0_std}
             data_log["loss"][step] = loss.item()
+
+            if log_wandb:
+                wandb.log({"loss": loss.item(), "l0_mean": l0_mean, "l0_std": l0_std, "step": step})
+            
+                if frac_dead:
+                    wandb.log({"frac_dead": frac_dead, "step": step})
+            
+                if plot_l0:
+                    alpha = 0.3 + (0.7 * step / n_steps)  # alpha from 0.3 to 1.0
+                    l0_history.append({"step": step, "mean": l0_mean, "std": l0_std, "alpha": alpha})
+                    l0_fig = mp.plot_l0_stats(l0_history)
+                    wandb.log({"l0_std_vs_mean": l0_fig, "step": step})
 
     return data_log
 
-# </s>
 
-# <s> Other
-
-def batched_forward_pass(
-    spike_counts: Int[Tensor, "n_examples n_units"],
-    sae: Sae, 
-    batch_sz: int, 
-    seq_len: int, 
-    device: str = "cuda"
-) -> tuple[
-    Int[Tensor, "n_examples n_inst"], 
-    Float[Tensor, "n_examples n_inst n_units"], 
-    Float[Tensor, "n_examples n_inst n_hidden_ae"],
-    Float[Tensor, "n_examples n_inst"],
-    Float[Tensor, "n_examples n_inst"],
-    Float[Tensor, "n_examples n_inst"]
-]:
-    """Perform batched forward pass through SAE model.
+def eval_model(
+    spk_cts: Int[Tensor, "n_examples n_units"],
+    sae: Sae,
+    batch_sz: int = 1024,
+    log_wandb: bool = False
+):
+    """Evaluates the model after training, and generates plots/metrics.
     
-    Returns a tuple containing:
-        - L0 (number of active features per example)
-        - Reconstructed spike counts per example
-        - Hidden layer activations per example
-        - L1 loss per example
-        - L2 loss per example
-        - Total loss per example
+    Plots/Metrics:
+    1. L0 boxplot (per example)
+    2a. Cosine-Similarity boxplot of reconstructions vs. true over all neurons (per example)
+    2b. Cosine-Similarity boxplot of reconstructions vs. true over all examples (per neuron)
+    3b. R² boxplot of reconstructions vs. true over all neurons (per example)
+    3a. R² boxplot of reconstructions vs. true over all examples (per neuron)
+
     """
-    # Initialize batches.
-    n_examples, n_units = spike_counts.shape[0], spike_counts.shape[1]
+    device = sae.W_enc.device
+
+    # Set some constants.
     n_inst = sae.cfg.n_instances
-    n_full_batches, final_batch_sz = n_examples // batch_sz, n_examples % batch_sz
-    n_steps = n_full_batches + (1 if final_batch_sz > 0 else 0)
+    n_units = spk_cts.shape[1]
+    n_examples = spk_cts.shape[0]
+    valid_starts = n_examples - sae.cfg.seq_len + 1
+    n_steps = valid_starts // batch_sz  # total number of examples
+    n_recon_examples = n_steps * batch_sz
     
-    # Initialize output tensors.
-    l0 = t.zeros((n_examples, n_inst), dtype=t.float32, device=device)
-    recon_spk_cts = t.empty((n_examples, n_inst, n_units), dtype=t.bfloat16, device=device)
-    h_acts = t.empty((n_examples, n_inst, sae.cfg.n_hidden_ae), dtype=t.bfloat16, device=device)
-    l1_losses = t.empty((n_examples, n_inst), dtype=t.bfloat16, device=device)
-    l2_losses = t.empty((n_examples, n_inst), dtype=t.bfloat16, device=device)
-    total_losses = t.empty((n_examples, n_inst), dtype=t.bfloat16, device=device)
-    
-    progress_bar = tqdm(range(n_steps))
+    # <ss> Run examples through model and compute metrics.
+
+    # Create tensors to store L0 and reconstructions.
+    l0 = t.zeros((n_recon_examples, n_inst), dtype=t.float32, device=device)
+    recon_spk_cts = t.empty((n_recon_examples, n_inst, n_units), dtype=bfloat16, device=device)
+
+    # Create tensors to store eval metrics.
+    r2_per_example = t.empty((n_recon_examples, n_inst), dtype=bfloat16, device=device)
+    cos_sim_per_example = t.empty((n_recon_examples, n_inst), dtype=bfloat16, device=device)
+
+    progress_bar = tqdm(range(n_steps), desc="SAE batch evaluation step")
     with t.no_grad():
-        for step in progress_bar:
-            # Set up for forward pass.
-            cur_batch_size = batch_sz if step < n_full_batches else final_batch_sz
-            start_idx = step * batch_sz
-            end_idx = start_idx + cur_batch_size
-            idxs = t.arange(start_idx, end_idx)
-            idxs = repeat(idxs, "batch -> batch inst", inst=n_inst)
-            # broadcast idxs for each sequence to a new dimension
-            seq_idxs = idxs.unsqueeze(-1) + t.arange(seq_len)
-            spike_count_seqs = spike_counts[seq_idxs]
-            spike_count_seqs = rearrange(
-                spike_count_seqs, "batch inst seq unit -> (batch seq) inst unit"
-            )
-            
-            # Compute reconstructions, hidden layer activations, and losses.
-            l1_loss, l2_loss, loss, z, x_prime = sae(spike_count_seqs)
-            
-            # Compute L0.
-            nonzero_mask = (z.abs() > 1e-7).float()
+        for step in progress_bar:  # loop over all examples
+            # Get start index for each seq in batch, and then get the full seq indices.
+            start_idxs = t.arange(step * batch_sz, (step + 1) * batch_sz)
+            seq_idxs = repeat(start_idxs, "batch -> batch inst", inst=n_inst)
+            seq_idxs = seq_idxs.unsqueeze(-1) + t.arange(sae.cfg.seq_len)  # broadcast to seq dim
+            spike_count_seqs = spk_cts[seq_idxs]  # [batch, inst, seq, unit]
+            # Forward pass through SAE.
+            x_prime, h = sae(spike_count_seqs)
+            nonzero_mask = (h.abs() > 1e-7).float()
             cur_l0 = reduce(nonzero_mask, "batch inst sae_feat -> batch inst", "sum")
-            
-            # Store results
-            l0[idxs[:, 0]] = cur_l0
-            recon_spk_cts[idxs[:, 0]] = x_prime
-            h_acts[idxs[:, 0]] = z
-            l1_losses[idxs[:, 0]] = l1_loss
-            l2_losses[idxs[:, 0]] = l2_loss
-            total_losses[idxs[:, 0]] = loss
+            # Store results.
+            l0[start_idxs] = cur_l0
+            recon_spk_cts[start_idxs] = x_prime
+            # Calculate metrics for examples.
+            r2_per_example[start_idxs] = vec_r2(x_prime, spk_cts[start_idxs])
+            cos_sim_per_example[start_idxs] = (
+                t.cosine_similarity(x_prime, spk_cts[start_idxs].unsqueeze(1), dim=-1)
+            )
+
+    r2_per_example[~t.isfinite(r2_per_example)] = 0.0  # div by 0 cases
+
+    # Calculate metrics for units.
+    cos_sim_per_unit = t.empty((n_units, n_inst))
+    r2_per_unit = np.empty((n_units, n_inst))
+
+    spk_cts_np = asnumpy(spk_cts.float())
+    recon_spk_cts_np = asnumpy(recon_spk_cts.float())
+
+    for unit in range(n_units):
+        cos_sim_per_unit[unit] = t.cosine_similarity(
+            recon_spk_cts[..., unit], spk_cts[:n_recon_examples, unit].unsqueeze(-1), dim=0
+        )
+        for inst in range(n_inst):
+            r2_per_unit[unit, inst] = r2_score(
+                spk_cts_np[:n_recon_examples, unit], recon_spk_cts_np[:, inst, unit]
+        )
+
+    # </ss>
+
+    # <ss> Create plots.
+
+    fig, (ax_l0, ax_r2, ax_cos) = plt.subplots(1, 3, figsize=(18, 6), constrained_layout=True)
+    sns.set_theme(style="whitegrid")
     
-    return l0, recon_spk_cts, h_acts, l1_losses, l2_losses, total_losses
+    # <sss> L0 boxplot.
+    
+    l0_data = [asnumpy(l0[:, i]) for i in range(n_inst)]
+    mp.box_strip_plot(
+        ax=ax_l0,
+        data=l0_data,
+        show_legend=True
+    )
+    # Update width of box plot and size and alpha of strip plot.
+    # for box in ax_l0.artists:
+    #     box.set_width(0.4)  # Change boxplot width
+    # for collection in ax_l0.collections:
+    #     if isinstance(collection, plt.matplotlib.collections.PathCollection):
+    #         collection.set_sizes([4])
+    #         collection.set_alpha(0.4)
+    # Prettify axes.
+    ax_l0.set_xlabel("")
+    ax_l0.set_ylabel("")
+    ax_l0.set_xticks(range(n_inst))
+    ax_l0.set_xticklabels([f"SAE {i}" for i in range(n_inst)])
+    ax_l0.set_yticks(np.arange(0, l0.max().item() + 1, sae.cfg.topk // 2))
+    ax_l0.set_title("L0 of SAE features")
+    
+    # </sss>
+
+    # <sss> Format and plot R² and Cosine Similarity data.
+    
+    cos_sim_per_example = asnumpy(cos_sim_per_example.float())
+    r2_per_example = asnumpy(r2_per_example.float())
+    cos_sim_per_unit = asnumpy(cos_sim_per_unit.float())
+
+    model_names = [f"SAE {i}" for i in range(2)]
+    dfs = []
+
+    dfs.append(
+        pd.DataFrame(cos_sim_per_example, columns=model_names)
+        .melt(var_name="SAE", value_name="Value")
+        .assign(Type="Examples", Metric="Cosine Similarity")
+    )
+
+    dfs.append(
+        pd.DataFrame(cos_sim_per_unit, columns=model_names)
+        .melt(var_name="SAE", value_name="Value")
+        .assign(Type="Units", Metric="Cosine Similarity")
+    )
+
+    dfs.append(
+        pd.DataFrame(r2_per_example, columns=model_names)
+        .melt(var_name="SAE", value_name="Value")
+        .assign(Type="Examples", Metric="R²")
+    )
+
+    dfs.append(
+        pd.DataFrame(r2_per_unit, columns=model_names)
+        .melt(var_name="SAE", value_name="Value")
+        .assign(Type="Units", Metric="R²")
+    )
+
+    df = pd.concat(dfs, ignore_index=True)
+
+    cos_sim_df = df[df["Metric"] == "Cosine Similarity"]
+    r2_df = df[df["Metric"] == "R²"]
+    
+    mp.box_strip_plot(
+        ax=ax_r2,
+        data=r2_df,
+        x="Type",
+        y="Value",
+        hue="SAE",
+        show_legend=False
+    )
+    # Prettify axes.
+    ax_r2.set_xlabel("")
+    ax_r2.set_ylabel("")
+    ax_r2.set_ylim(-1.0, 1.0)
+    ax_r2.set_yticks(np.arange(-1.0, 1.1, 0.1))
+    ax_r2.set_title("R² of SAE reconstructions")
+
+    mp.box_strip_plot(
+        ax=ax_cos,
+        data=cos_sim_df,
+        x="Type",
+        y="Value",
+        hue="SAE",
+        show_legend=False
+    )
+    # Prettify axes.
+    ax_cos.set_xlabel("")
+    ax_cos.set_ylabel("")
+    ax_cos.set_ylim(0.1, 1.0)
+    ax_cos.set_yticks(np.arange(0.1, 1.1, 0.1))
+    ax_cos.set_title("Cosine Similarity of true and reconstructed spike counts")
+    
+    # </sss>
+
+    # </ss>
+
+    # <ss> Log to wandb.
+
+    if log_wandb:
+
+        # Log metrics figure
+        wandb.log({"combined_metrics_plot": wandb.Image(fig)})
+        plt.close(fig)
+        
+        # Log metrics values
+        wandb.log({
+            "r2_per_example_mean": np.mean(r2_per_example),
+            "r2_per_unit_mean": np.mean(r2_per_unit),
+            "cos_per_example_mean": np.mean(cos_sim_per_example),
+            "cos_per_unit_mean": np.mean(cos_sim_per_unit),
+        })
+
+    # </ss>
 
 # </s>
