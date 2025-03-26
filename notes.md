@@ -88,7 +88,14 @@ Some notes on things we've tried or have thought about trying. Coud be useful fo
 
 - Learning rate schedule
 
-    - A simple loss-independent cosine cycle seems to work marginally better than static lr, but may not worth be using because of overhead of computing it on each step (though this is fairly minimal) and because of setting/tuning warmup phase, decay phase, and cycle params.
+    - A simple loss-independent cosine cycle seems to work marginally better than static lr, but may not worth be using because of overhead of computing it on each step (though this is fairly minimal) and because of setting/tuning warmup phase, decay phase, and cycle params. <br>...*But, we are using it for now!* With the following settings:
+
+        - `n_warmup_steps = int(n_steps * 0.1)`
+        - `decay_start_step = int(n_steps * 0.5)`
+        - `n_decay_steps = n_steps - decay_start_step`
+        - `n_cycle_steps = int(n_decay_steps * 0.2)`
+        - `min_lr = 1e-2 * init_lr`
+        - `cycle_amplitude = 0.1`  
 
     - Probably not worth making loss-dependent, as SAEs often show oscillatory loss patterns as they discover and refine sparse features. e.g. loss can temporarily increase when the SAE "kills" ineffective features to discover better ones. A loss-dependent scheduler might interpret this as "training is diverging" and decrease the rate just as the model is making necessary reorganizations.
 
