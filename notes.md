@@ -16,9 +16,9 @@ Some notes on things we've tried or have thought about trying. Coud be useful fo
 
     - Haven't tried, but probably not worth trying as implementation and tuning is a bit tricky, and people report that reconstructions and interpretability are generally worse than with TopK or Jump-ReLU SAEs.
 
-- Batch-TopK
+- (Batch)TopK
 
-    - Seems to work well! Using this as default as we don't have to tune sparsity coefficient and explicitly normalize decoder weights on each step.
+    - Seems to work well! Nice that we don't have to tune sparsity coefficient.
 
 - Matryoshka SAE (MSAE), or multiple sizes of SAEs
 
@@ -27,6 +27,8 @@ Some notes on things we've tried or have thought about trying. Coud be useful fo
     - We extend MSAEs to use varying topk in addition to varying dsae for the different levels: we find better reconstructions, fewer dead neurons, and better interpretability for higher-level features when using larger topk for these features.
     
     - Using this with batch-topk; awaiting interpretability results!
+
+    - Maybe add weighting to the levels of reconsructions in the loss?
 
 - Jump-ReLU SAE
 

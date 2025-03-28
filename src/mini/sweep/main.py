@@ -130,7 +130,7 @@ if __name__ == "__main__":
         sae = mt.Sae(sae_cfg).to(device)
         _data_log = mt.optimize(  # train model
             spk_cts=spk_cts,
-            model=sae,
+            sae=sae,
             seq_len=sae_cfg.seq_len,
             loss_fn=wandb.config.loss_fn,
             lr=wandb.config.lr,
