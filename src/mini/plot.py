@@ -71,6 +71,7 @@ def box_strip_plot(
         legend=False,
         ax=ax,
     )
+    ax.grid(True, alpha=0.5)
     
     return ax
 

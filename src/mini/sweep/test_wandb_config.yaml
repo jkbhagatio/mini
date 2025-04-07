@@ -1,6 +1,6 @@
 # method: bayes
 method: grid
-name: test_SANe_allen_760693773_dsae_topk
+name: test_msae_allen_732592105
 metric:
   name: loss
   goal: minimize
@@ -19,23 +19,14 @@ sweep_config:
 #   cpus_per_task: 16
 #   mem_gb: 128
 parameters:
-  d_sae:
-    # values: [4096, 8192, 16384, 32768, 65536]
-    values: [1024, 2048, 4096]
-  top_k:
-    # values: [16, 24, 32, 48, 64, 96, 128]
-    values: [12, 24, 48]
-  # lr:
-  #   min: 5.0e-4
-  #   max: 1.0e-2
-  #   distribution: log_uniform_values
+  dsae_topk_level_map: 
+    values: [
+      {1024: 12, 2048: 24, 4096: 48}, 
+      {2048: 16, 4096: 32, 8192: 48}
+    ]
   lr:
     values: [5e-3]
-    # values: [5e-4, 1e-3, 5e-3, 1e-2]
-    # values: [1e-4, 8e-4, 1.5e-3, 2.2e-3, 2.9e-3, 3.6e-3, 4.3e-3, 5e-3]  # linspaced
-    # values: [1e-4, 1.8e-4, 3.1e-4, 5.3e-4, 9.4e-4, 1.6e-3, 2.9e-3, 5e-3]  # logspaced
   loss_fn:
-    # values: [msle_0.9, msle_1.0, msle_1.1]
     values: [msle_1.0]
   n_instances:
     values: [2]
