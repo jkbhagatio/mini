@@ -17,7 +17,6 @@
 
 import argparse
 import json
-from math import log
 import multiprocessing as mp
 import os
 import time
@@ -88,7 +87,6 @@ if __name__ == "__main__":
         fr_ax = firing_rate_hist(pd.read_csv(Path(args.spk_cts_file), index_col=0))
         wandb.log({"firing_rate_hist": wandb.Image(fr_ax.figure)})
 
-
     # </s>
 
     # <s> Define sweep run function.
@@ -101,46 +99,52 @@ if __name__ == "__main__":
         counts_df = pd.read_csv(Path(args.spk_cts_file), index_col=0)
         spk_cts = t.from_numpy(counts_df.to_numpy()).bfloat16().to(device)
         spk_cts /= spk_cts.max()  # max normalize spike counts
-        print(f"Loaded spike counts: {spk_cts.shape}")
         
         # Initialize wandb run.
         run = wandb.init()
         start_time = time.time()
-        run.name = (
-            f"d_sae={wandb.config.d_sae}  topk={wandb.config.top_k}  lr={wandb.config.lr:.1e}  "
-            f"loss_fn={wandb.config.loss_fn}"
-        )
-        run.save()  # save run name and then continue with run
+        # run.name = (
+        #     f"d_sae={wandb.config.d_sae}  topk={wandb.config.top_k}  lr={wandb.config.lr:.1e}  "
+        #     f"loss_fn={wandb.config.loss_fn}"
+        # )
+        # run.save()  # save run name and then continue with run
         
         # Set training config
         n_epochs, batch_sz = wandb.config.epochs, wandb.config.batch_size
         n_steps = spk_cts.shape[0] // batch_sz * n_epochs
         log_freq = n_steps // n_epochs // 2
-        neuron_resamples_per_epoch = 2
-        neuron_resample_window = spk_cts.shape[0] // batch_sz // neuron_resamples_per_epoch
+        dead_neuron_window = n_steps // n_epochs // 2
+        if "msle" in wandb.config.loss_fn:
+            loss_fn = mt.msle
+            tau = float(wandb.config.loss_fn.split("_")[-1])
+        else:
+            loss_fn = mt.mse
+            tau = None
         
         # Create the SAE cfg and run training and evaluation.
+        dsae_map = wandb.config.dsae_topk_level_map
+        dsae_map = {int(k): int(v) for k, v in dsae_map.items()}
+
         sae_cfg = mt.SaeConfig(
             n_input_ae=spk_cts.shape[1],
-            n_instances=wandb.config.n_instances,
-            n_hidden_ae=wandb.config.d_sae,
+            dsae_topk_level_map=dsae_map,
             seq_len=wandb.config.seq_len,
-            topk=wandb.config.top_k
+            n_instances=wandb.config.n_instances,
         )
         sae = mt.Sae(sae_cfg).to(device)
         _data_log = mt.optimize(  # train model
             spk_cts=spk_cts,
-            model=sae,
-            seq_len=sae_cfg.seq_len,
-            loss_fn=wandb.config.loss_fn,
-            lr=wandb.config.lr,
+            sae=sae,
+            loss_fn=loss_fn,
+            optimizer=t.optim.Adam(sae.parameters(), lr=wandb.config.lr),
             use_lr_sched=wandb.config.use_lr_sched,
-            neuron_resample_window=neuron_resample_window,
-            batch_sz=batch_sz,
+            dead_neuron_window=dead_neuron_window,
             n_steps=n_steps,
             log_freq=log_freq,
+            batch_sz=batch_sz,
             log_wandb=True,
             plot_l0=True,
+            tau=tau
         )
         mt.eval_model(spk_cts, sae, batch_sz=1024, log_wandb=True)  # evaluate model
         

@@ -357,7 +357,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/f7/0a/8a213cecea7b731c540f25212ba5f9a818f358237ac51a44d448bd753690/msgpack-1.1.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/a2/06/3f95030c6a3ece0271e369b34ea2a9be8879c0197a78ee7d84273861342d/ndindex-1.9.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/4e/3c/f00ba938f68ad1bbed6f060fbb13193213cc86eae65d1b5c3ba825f6b4a9/ndx_events-0.2.1-py2.py3-none-any.whl
-      - pypi: https://download.pytorch.org/whl/networkx-3.3-py3-none-any.whl#sha256=28575580c6ebdaf4505b22c6256a2b9de86b316dc63ba9e93abde3d78dfdbcf2
+      - pypi: https://download.pytorch.org/whl/networkx-3.2.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ed/f2/009d9dd8cd22f253fd6ead4165f81fafbe22489c1cfea612e18aa3dcb0fa/numexpr-2.10.2-cp39-cp39-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://download.pytorch.org/whl/cu121/nvidia_cublas_cu12-12.1.3.1-py3-none-manylinux1_x86_64.whl#sha256=ee53ccca76a6fc08fb9701aa95b6ceb242cdaab118c3bb152af4e579af792728
       - pypi: https://download.pytorch.org/whl/cu121/nvidia_cuda_cupti_cu12-12.1.105-py3-none-manylinux1_x86_64.whl#sha256=e54fde3983165c624cb79254ae9818a456eb6e87a7fd4d56a2352c24ee542d7e
@@ -737,7 +737,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/5f/e8/2162621e18dbc36e2bc8492fd0e97b3975f5d89fe0472ae6d5f7fbdd8cf7/msgpack-1.1.0-cp39-cp39-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/ae/a2/ab7527ec8d96d9fdb686c83bc111e8cf1f53ba177b08b256d0178c320c3e/ndindex-1.9.2-cp39-cp39-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/4e/3c/f00ba938f68ad1bbed6f060fbb13193213cc86eae65d1b5c3ba825f6b4a9/ndx_events-0.2.1-py2.py3-none-any.whl
-      - pypi: https://download.pytorch.org/whl/networkx-3.3-py3-none-any.whl#sha256=28575580c6ebdaf4505b22c6256a2b9de86b316dc63ba9e93abde3d78dfdbcf2
+      - pypi: https://download.pytorch.org/whl/networkx-3.2.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/70/81/affb9ff26e8accb210fe5585b095bd6872f5614d18b76cd53888e955ed9a/numexpr-2.10.2-cp39-cp39-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/23/cd/066e86230ae37ed0be70aae89aabf03ca8d9f39c8aea0dec8029455b5540/opt_einsum-3.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c9/bc/b7db44f5f39f9d0494071bddae6880eb645970366d0a200022a1a93d57f5/pip-25.0.1-py3-none-any.whl
@@ -5364,33 +5364,33 @@ packages:
   - pkg:pypi/nest-asyncio?source=hash-mapping
   size: 11543
   timestamp: 1733325673691
-- pypi: https://download.pytorch.org/whl/networkx-3.3-py3-none-any.whl#sha256=28575580c6ebdaf4505b22c6256a2b9de86b316dc63ba9e93abde3d78dfdbcf2
+- pypi: https://download.pytorch.org/whl/networkx-3.2.1-py3-none-any.whl
   name: networkx
-  version: '3.3'
-  sha256: 28575580c6ebdaf4505b22c6256a2b9de86b316dc63ba9e93abde3d78dfdbcf2
+  version: 3.2.1
   requires_dist:
-  - numpy>=1.23 ; extra == 'default'
+  - numpy>=1.22 ; extra == 'default'
   - scipy>=1.9,!=1.11.0,!=1.11.1 ; extra == 'default'
-  - matplotlib>=3.6 ; extra == 'default'
+  - matplotlib>=3.5 ; extra == 'default'
   - pandas>=1.4 ; extra == 'default'
-  - changelist==0.5 ; extra == 'developer'
+  - changelist==0.4 ; extra == 'developer'
   - pre-commit>=3.2 ; extra == 'developer'
   - mypy>=1.1 ; extra == 'developer'
   - rtoml ; extra == 'developer'
   - sphinx>=7 ; extra == 'doc'
   - pydata-sphinx-theme>=0.14 ; extra == 'doc'
   - sphinx-gallery>=0.14 ; extra == 'doc'
-  - numpydoc>=1.7 ; extra == 'doc'
+  - numpydoc>=1.6 ; extra == 'doc'
   - pillow>=9.4 ; extra == 'doc'
+  - nb2plots>=0.7 ; extra == 'doc'
   - texext>=0.6.7 ; extra == 'doc'
-  - myst-nb>=1.0 ; extra == 'doc'
+  - nbconvert<7.9 ; extra == 'doc'
   - lxml>=4.6 ; extra == 'extra'
-  - pygraphviz>=1.12 ; extra == 'extra'
-  - pydot>=2.0 ; extra == 'extra'
+  - pygraphviz>=1.11 ; extra == 'extra'
+  - pydot>=1.4.2 ; extra == 'extra'
   - sympy>=1.10 ; extra == 'extra'
   - pytest>=7.2 ; extra == 'test'
   - pytest-cov>=4.0 ; extra == 'test'
-  requires_python: '>=3.10'
+  requires_python: '>=3.9'
 - conda: https://conda.anaconda.org/conda-forge/noarch/nodeenv-1.9.1-pyhd8ed1ab_1.conda
   sha256: 3636eec0e60466a00069b47ce94b6d88b01419b6577d8e393da44bb5bc8d3468
   md5: 7ba3f09fceae6a120d664217e58fe686

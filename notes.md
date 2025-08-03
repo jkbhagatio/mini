@@ -16,9 +16,9 @@ Some notes on things we've tried or have thought about trying. Coud be useful fo
 
     - Haven't tried, but probably not worth trying as implementation and tuning is a bit tricky, and people report that reconstructions and interpretability are generally worse than with TopK or Jump-ReLU SAEs.
 
-- Batch-TopK
+- (Batch)TopK
 
-    - Seems to work well! Using this as default as we don't have to tune sparsity coefficient and explicitly normalize decoder weights on each step.
+    - Seems to work well! Nice that we don't have to tune sparsity coefficient.
 
 - Matryoshka SAE (MSAE), or multiple sizes of SAEs
 
@@ -28,10 +28,11 @@ Some notes on things we've tried or have thought about trying. Coud be useful fo
     
     - Using this with batch-topk; awaiting interpretability results!
 
+    - Maybe add weighting to the levels of reconsructions in the loss?
+
 - Jump-ReLU SAE
 
-    - Haven't tried this yet, ... (explanation of how it works)
-
+    - Haven't tried
 
 ## SAE loss functions
 
@@ -43,7 +44,7 @@ Some notes on things we've tried or have thought about trying. Coud be useful fo
 
     - Seems to work well!
 
-- LMSE
+- MSLE
 
     - Seems to work well! More often than not, it outperforms MSE.
 
@@ -57,7 +58,7 @@ Some notes on things we've tried or have thought about trying. Coud be useful fo
 
             - Can add a small epsilon term, but what this exact value to be is tricky, and then we're being a bit unfaithful to the actual spike data.
 
-        - Seemingly always performed worse than MSE and LMSE.
+        - Seemingly always performed worse than MSE and MSLE.
 
 
 ### Sparsity-penalty loss (for non Batch-TopK and Jump-ReLU SAEs)
@@ -88,7 +89,7 @@ Some notes on things we've tried or have thought about trying. Coud be useful fo
 
 - Learning rate schedule
 
-    - A simple loss-independent cosine cycle seems to work marginally better than static lr, but may not worth be using because of overhead of computing it on each step (though this is fairly minimal) and because of setting/tuning warmup phase, decay phase, and cycle params. <br>...*But, we are using it for now!* With the following settings:
+    - A simple loss-independent cosine cycle seems to work marginally better than static lr, but may not worth be using because of overhead of computing it on each step (though this is fairly minimal) and because of setting/tuning warmup phase, decay phase, and cycle params. <br>...*But, we are using it for now, as it does lead to slightly better reconstruction loss!* With the following settings:
 
         - `n_warmup_steps = int(n_steps * 0.1)`
         - `decay_start_step = int(n_steps * 0.5)`
@@ -115,7 +116,7 @@ Some notes on things we've tried or have thought about trying. Coud be useful fo
 
 - LAdam
 
-    - Doesn't provide any real benefit in our case because SAEs are shallow networks.
+    - Doesn't provide any real benefit in our case because we're using shallow SAEs.
 
 - NAdam: 
     
@@ -128,47 +129,37 @@ Some notes on things we've tried or have thought about trying. Coud be useful fo
 ### Timebin size
 
 
-Ideally, we want as small as possible, without the data becoming too sparse. 50 ms seems to give about 0.8 sparsity per unit with average unit firing rate of ~ 10 Hz. This seems decent and is similar to 100 ms timebins, so went with this.
+Ideally, we want as small as possible, without the data becoming too sparse. 50 ms seems to give about 0.8 sparsity per unit with average unit firing rate of ~ 10 Hz. This seems decent and is similar to 100 ms timebins, so went with this. Could potentially go down to 20 or 10 ms bins if enough unit activity.
 
 
 ### Unit preprocessing
 
 
-Ideally we'll have clean units. We used ks3.5 labeled good untis and had an additional step of removing neurons with high isi_violations at 2 ms (> 0.1, a sign of contamination), and low firing rates (< 0.5 Hz)
-
+Ideally we'll have clean units. We used ks3.5 labeled good untis and had an additional step of removing neurons with high isi_violations at 2 ms (> 0.1, a sign of contamination), and low firing rates (< 0.5 Hz). We max normalize the spike data.
 
 ### Sequence length
 
-
-Right now, we take one timebin in, and try to reconstruct the same timebin. We could also take multiple timebins in, and only trying to reconstruct the final timebin, because longer spiking history may be meaningful for reconstruction / prediction. Have the code for this and have tested it, but haven't gotten good results with seq_len > 1. Probably worth looking more into.
+Right now, we take one timebin in, and try to reconstruct the same timebin. We could also take multiple timebins in, and try to reconstruct various of these timebins, because longer spiking history may be meaningful for reconstruction / prediction ? Have the code for this and have tested it, but haven't gotten good results with seq_len > 1. Probably worth looking more into.
 
 
 ## Methods to compare vs. MINI
 
+### (d)PCA 
 
-### PCA
+### (Sparse) and/or (seq) NMF
 
-
-### (Sparse) NMF
-
-
-### LFADS
-
+### piVAE
 
 ### CEBRA
 
 
-### sliceTCA
-
-
 ## General notes
 
+- Ideally we give default SAE hyperparams (or even range of hyperparams for a small sweep) as a function of units and examples in a given dataset.
 
-- We need to set default SAE hyperparams (or even range of hyperparams for a small sweep) as a function of units and examples in a given dataset.
+    - After some initial sweeps over (`d_sae`, `lr`, `lr_sched`, `loss_fn`, and `topk`), we found that `lr_sched=True` and `loss_fn` as some variant of `msle` always outperformed other alternatives for these hyperparams. So we can probably just set these as defaults, and just sweep over `d_sae`, `lr`, and `topk`, and `tau` for msle for given datasets.
 
-    - After some initial sweeps over (`d_sae`, `lr`, `lr_sched`, `loss_fn`, and `topk`), we found that `lr_sched=True` and `loss_fn` as some variant of `lmse` always outperformed other alternatives for these hyperparams. So we can probably just set these as defaults, and just sweep over `d_sae`, `lr`, and `topk`, and `tau` for lmse for given datasets.
-
-    - -> `lr = 5e-3`, `loss_fn = msle1.0` seem to be always outperforming alternatives.
+    - -> `lr = 5e-3`, `loss_fn = msle1.0` seem to be best performing.
 
     - How to set `dsae` (heuristic reccomendation)
 
