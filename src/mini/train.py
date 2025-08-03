@@ -13,7 +13,7 @@ from jaxtyping import Float, Int, Bool
 from matplotlib import pyplot as plt
 import seaborn as sns
 from sklearn.metrics import r2_score
-from torch import bfloat16, nn, Tensor, topk
+from torch import bfloat16, nn, Tensor
 from torch.nn import functional as F
 from tqdm import tqdm
 
@@ -460,9 +460,6 @@ def eval_model(
     
     cos_sim_per_example = asnumpy(cos_sim_per_example.float())
     r2_per_example = asnumpy(r2_per_example.float())
-    neg_r2_props = (r2_per_example < 0).mean(axis=0)
-    for i, prop in enumerate(neg_r2_props):
-        print(f"SAE {i}: {prop:.2%} of R² (per example) values are negative")
     cos_sim_per_unit = asnumpy(cos_sim_per_unit.float())
 
     model_names = [f"SAE {i}" for i in range(2)]
