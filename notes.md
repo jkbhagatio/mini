@@ -144,24 +144,16 @@ Right now, we take one timebin in, and try to reconstruct the same timebin. We c
 
 ## Methods to compare vs. MINI
 
+### (d)PCA 
 
-### PCA
+### (Sparse) and/or (seq) NMF
 
-
-### (Sparse) NMF
-
-
-### LFADS
-
+### piVAE
 
 ### CEBRA
 
 
-### sliceTCA
-
-
 ## General notes
-
 
 - Ideally we give default SAE hyperparams (or even range of hyperparams for a small sweep) as a function of units and examples in a given dataset.
 

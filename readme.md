@@ -26,26 +26,24 @@ Given:
 
 - Neural data (in the form of binned spike counts as $[examples \times neurons]$)
 
-- Behavioral and/or environmental metadata
+- Behavioral and/or environmental (meta)data
 
 **mini** performs the following steps to find interpretable neural signatures that underlie behavioral and/or environmental features (referred to collectively as *natural* features)
 
-1. Splits the neural data into train/val/test sets
+1. Trains an MSAE to reconstruct the neural data
 
-2. Trains an SAE (on the train + val splits) to reconstruct the neural data
-
-3. Validates the quality of the SAE, by looking at
+2. Validates the quality of the MSAE, by looking at
 
     1. Sparsity of SAE features
 
     2. Reconstruction quality of neural data
 
-4. Ranks the SAE features by interpretability likelihood
+3. Ranks the SAE features by interpretability likelihood
 
-5. For each of the top $k$ SAE features, finds a corresponding natural feature with manual feedback.
+4. (Manual) Finds a corresponding natural feature for each of the top $k$ SAE features.
 
-6. Validates the SAE-natural feature pairing on the test split, by:
+5. (Manual) Validates the SAE-natural feature pairing by:
 
     1. Looking at confusion matrix metrics for co-occurrences of the natural feature with the SAE feature.
 
-    2. Showing that the neural signature defined by the SAE feature can decode the natural feature as well as it can be decoded by the entirety of the neural data.
+    2. (TODO) Showing that the neural signature defined by the SAE feature can decode the natural feature well.

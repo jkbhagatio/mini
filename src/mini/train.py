@@ -13,7 +13,7 @@ from jaxtyping import Float, Int, Bool
 from matplotlib import pyplot as plt
 import seaborn as sns
 from sklearn.metrics import r2_score
-from torch import bfloat16, nn, Tensor, topk
+from torch import bfloat16, nn, Tensor
 from torch.nn import functional as F
 from tqdm import tqdm
 
