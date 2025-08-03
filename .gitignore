@@ -8,3 +8,4 @@ __pycache__/
 wandb/
 data/
 slurm_logs/
+trained_saes/
