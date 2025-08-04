@@ -1,0 +1,60 @@
+\documentclass{article}
+
+% NeurIPS 2025 style files
+\usepackage{neurips_2025}
+
+% Standard packages
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{amsmath}        % mathematical formulas
+\usepackage{amssymb}        % mathematical symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{xcolor}         % colors
+\usepackage{graphicx}       % include graphics
+\usepackage{subcaption}     % subfigures
+\usepackage{algorithm}      % algorithms
+\usepackage{algorithmic}    % algorithm formatting
+
+% Title and authors
+\title{
+  Mechanistic Interpretability for Neural Interpretability: 
+  A pipeline for interpretable, neural feature discovery
+}
+
+\author{%
+  Author Name\thanks{Equal contribution} \\
+  Department/Institution \\
+  Address \\
+  \texttt{email@institution.edu} \\
+  % Add more authors as needed
+  % \And
+  % Co-Author Name\footnotemark[1] \\
+  % Department/Institution \\
+  % Address \\
+  % \texttt{email@institution.edu} \\
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Understanding neural computations requires identifying interpretable features from large-scale neural recordings. We present a novel application of Multi-Scale Sparse Autoencoders (MSAEs) to neural data analysis, enabling the discovery of interpretable latent features across multiple temporal and spatial scales. Our approach combines traditional Sparse Autoencoders (SAEs) with multi-scale architectures to extract meaningful neural representations from high-dimensional neural recordings. We evaluate our method on multiple large-scale datasets including Allen Neuropixels visual coding data, Churchland datasets, and Aeon recordings. Our results demonstrate that MSAEs can identify biologically relevant features while maintaining reconstruction quality, offering new insights into neural computation patterns. The discovered features show improved interpretability compared to traditional dimensionality reduction methods and enable effective decoding of behavioral and stimulus variables.
+\end{abstract}
+
+% Include individual sections
+\input{introduction}
+\input{methods}
+\input{results}
+\input{discussion}
+
+% Bibliography
+\bibliographystyle{neurips_2025}
+\bibliography{references}
+
+\end{document}

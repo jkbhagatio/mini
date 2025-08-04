@@ -1,0 +1,49 @@
+\section{Introduction}
+
+Modern neuroscience generates unprecedented volumes of high-dimensional neural data through advanced recording technologies such as Neuropixels probes and multi-electrode arrays. Understanding the computational principles underlying neural activity requires extracting interpretable features from these complex, high-dimensional recordings. Traditional dimensionality reduction techniques, while useful for visualization and basic analysis, often fail to provide the interpretability needed to understand neural computations at a mechanistic level.
+
+Sparse Autoencoders (SAEs) have emerged as a promising approach for discovering interpretable features in neural data by enforcing sparsity constraints that encourage the model to learn localized, meaningful representations. However, neural computations occur across multiple temporal and spatial scales, from millisecond-level spike timing to seconds-long behavioral epochs, and from individual neurons to large-scale network dynamics. Standard SAEs may miss important multi-scale structure in neural data.
+
+In this work, we introduce Multi-Scale Sparse Autoencoders (MSAEs) for neural data analysis, extending traditional SAEs to capture features across multiple temporal and spatial scales simultaneously. Our approach addresses several key challenges in neural data analysis:
+
+\begin{enumerate}
+\item \textbf{Multi-scale temporal dynamics}: Neural computations involve fast synaptic events, intermediate-timescale neural oscillations, and slow behavioral modulations that require different temporal resolutions for optimal feature extraction.
+
+\item \textbf{Interpretability vs. reconstruction trade-off}: While sparsity promotes interpretability, it must be balanced with the ability to accurately reconstruct the original neural signals for downstream analyses.
+
+\item \textbf{Scalability to large datasets}: Modern neural datasets contain millions of recorded time points across hundreds to thousands of neurons, requiring efficient algorithms that can scale to these data volumes.
+
+\item \textbf{Cross-dataset generalization}: Features discovered in one experimental context should generalize to related experimental paradigms and neural systems.
+\end{enumerate}
+
+\subsection{Related Work}
+
+% TODO: Expand this section with specific citations and comparisons
+Recent advances in interpretable machine learning have focused on developing methods that provide both predictive accuracy and mechanistic understanding. In neuroscience, several approaches have been developed for extracting interpretable features from neural data:
+
+\textbf{Traditional dimensionality reduction}: Principal Component Analysis (PCA) and Independent Component Analysis (ICA) have been widely used but often produce features that lack clear biological interpretation.
+
+\textbf{Sparse coding approaches}: Methods such as non-negative matrix factorization and dictionary learning have shown promise for identifying localized neural patterns.
+
+\textbf{Deep learning for neuroscience}: Recent work has applied various deep learning architectures to neural data, including variational autoencoders, recurrent neural networks, and transformers.
+
+\textbf{Sparse autoencoders}: SAEs have gained attention for their ability to learn interpretable features while maintaining reconstruction quality, with applications ranging from computer vision to neuroscience.
+
+Our work builds upon these foundations by specifically addressing the multi-scale nature of neural computations and providing systematic evaluation across multiple large-scale neural datasets.
+
+% TODO: Add specific contributions and outline of the paper
+\subsection{Contributions}
+
+This paper makes the following key contributions:
+
+\begin{enumerate}
+\item We introduce Multi-Scale Sparse Autoencoders (MSAEs) specifically designed for neural data analysis, extending traditional SAEs to capture multi-scale temporal and spatial patterns.
+
+\item We develop a comprehensive pipeline for neural data preprocessing, model training, evaluation, and feature interpretation that can be applied across different experimental paradigms.
+
+\item We provide systematic evaluation on multiple large-scale neural datasets, demonstrating the effectiveness of our approach across different brain regions, recording techniques, and experimental conditions.
+
+\item We show that MSAE-derived features enable effective decoding of behavioral and stimulus variables, validating their biological relevance.
+
+\item We release open-source implementations and interactive tools for feature exploration, facilitating broader adoption in the neuroscience community.
+\end{enumerate}

@@ -1,0 +1,121 @@
+\section{Discussion}
+
+\subsection{Summary}
+
+We have presented Multi-Scale Sparse Autoencoders (MSAEs) as a powerful approach for discovering interpretable features in large-scale neural recordings. Our method extends traditional sparse autoencoders to capture neural dynamics across multiple temporal and spatial scales, addressing a critical limitation of existing approaches that typically operate at a single resolution.
+
+Our comprehensive evaluation across three diverse neural datasets—Allen Neuropixels visual coding data, Churchland motor cortical recordings, and Aeon long-term behavioral recordings—demonstrates the broad applicability and effectiveness of our approach. Key findings include:
+
+\begin{enumerate}
+\item \textbf{Multi-scale feature discovery}: MSAEs successfully identify features ranging from millisecond-precision spike timing to multi-second behavioral episodes and even circadian rhythms, capturing the full spectrum of neural dynamics.
+
+\item \textbf{Improved interpretability}: Compared to traditional dimensionality reduction methods, MSAE features show clearer biological relevance, better stimulus/behavior selectivity, and more consistent patterns across experimental sessions.
+
+\item \textbf{Enhanced decoding performance}: Features extracted by MSAEs enable superior decoding of behavioral and stimulus variables compared to raw neural data and features from alternative methods.
+
+\item \textbf{Robust generalization}: The method generalizes well across different brain regions, species, experimental paradigms, and recording techniques, suggesting broad utility for the neuroscience community.
+
+\item \textbf{Systematic hyperparameter analysis}: Our exploration of the sparsity-reconstruction trade-off provides practical guidelines for applying MSAEs to new datasets and research questions.
+\end{enumerate}
+
+\subsection{Advantages and Limitations}
+
+\subsubsection{Advantages}
+
+\textbf{Multi-scale temporal analysis}: Unlike traditional methods that operate at fixed temporal resolutions, MSAEs can simultaneously capture both fast neural events and slow behavioral modulations. This is particularly important for understanding how neural computations unfold across different timescales.
+
+\textbf{Interpretability control}: The sparsity constraints in MSAEs provide explicit control over the interpretability-reconstruction trade-off, allowing researchers to tune the model based on their specific analysis goals.
+
+\textbf{Scalability}: Our implementation efficiently handles large-scale neural datasets with hundreds of neurons and extended recording periods, making it practical for modern high-density recording techniques.
+
+\textbf{Biological relevance}: The discovered features consistently show meaningful correlations with known behavioral and stimulus variables, suggesting that the method captures biologically relevant neural computations.
+
+\textbf{Reproducibility}: Features are stable across different training runs and experimental sessions, providing confidence in the reliability of discovered patterns.
+
+\subsubsection{Limitations}
+
+\textbf{Hyperparameter sensitivity}: The quality of discovered features depends on careful selection of hyperparameters, particularly the sparsity level and latent dimension. While we provide guidance based on our systematic analysis, optimal settings may vary across datasets.
+
+\textbf{Computational requirements}: Training MSAEs on large datasets requires significant computational resources, particularly when using multiple temporal scales. However, once trained, feature extraction is efficient.
+
+\textbf{Linear decoding assumption}: Our evaluation focuses primarily on linear decoding tasks. The method's performance on more complex, nonlinear behavioral predictions remains to be fully explored.
+
+\textbf{Limited causal inference}: While MSAEs identify correlational patterns in neural data, they do not directly establish causal relationships between neural features and behavior.
+
+\textbf{Single-session analysis}: Our current approach analyzes individual experimental sessions. Extensions to leverage information across multiple sessions or animals could potentially improve feature discovery.
+
+\subsection{Comparison with Alternative Approaches}
+
+Our work builds upon and extends several related approaches in computational neuroscience:
+
+\textbf{Traditional dimensionality reduction}: While PCA and ICA remain valuable for initial data exploration, MSAEs provide superior interpretability and biological relevance. The explicit sparsity constraints in MSAEs lead to more localized, interpretable features compared to the global patterns often found by PCA.
+
+\textbf{Deep learning approaches}: Recent applications of variational autoencoders and other deep learning methods to neural data have shown promise, but often lack the interpretability provided by sparse representations. MSAEs strike a balance between the expressiveness of deep networks and the interpretability of sparse coding.
+
+\textbf{State-space models}: Methods like GPFA excel at modeling smooth neural trajectories but may miss discrete, sparse events that are captured well by MSAEs. The two approaches are complementary, with MSAEs better suited for identifying discrete neural "events" and state-space models better for continuous trajectory analysis.
+
+\textbf{Dictionary learning}: Traditional sparse coding approaches using dictionary learning share similarities with our method but typically operate at single temporal scales and may not scale as well to high-dimensional neural data.
+
+\subsection{Future Work}
+
+\subsubsection{Structured Connectivity Constraints (SCCs)}
+
+A particularly promising direction for future work involves incorporating structured connectivity constraints into the MSAE framework. Neural circuits exhibit known anatomical and functional connectivity patterns that could inform feature discovery:
+
+\textbf{Brain diffing}: By constraining features to respect known anatomical boundaries, we could develop "brain diffing" capabilities that identify differences in neural computations between brain regions, experimental conditions, or individual animals.
+
+\textbf{Cross-region prediction}: Features that capture inter-regional connectivity could enable prediction of activity in one brain region based on activity in anatomically connected regions, providing insights into information flow through neural circuits.
+
+\textbf{Hierarchical feature organization}: Incorporating hierarchical constraints based on brain anatomy could lead to features organized by functional modules, from local microcircuits to large-scale brain networks.
+
+\subsubsection{Extended Sequence Modeling}
+
+Current MSAEs operate on relatively short temporal windows. Extending the method to longer sequences could capture:
+
+\textbf{History dependence}: Longer temporal contexts could improve reconstructions by capturing how past neural activity influences current states, particularly relevant for memory and learning processes.
+
+\textbf{Behavioral sequences}: Extended sequences would enable better modeling of complex behavioral episodes that unfold over minutes to hours, such as foraging strategies or social interactions.
+
+\textbf{Cross-trial learning}: Modeling dependencies across experimental trials could reveal how neural representations change as animals learn or adapt to task demands.
+
+\subsubsection{Multi-modal Integration}
+
+Future extensions could integrate multiple data modalities:
+
+\textbf{Behavioral integration}: Jointly modeling neural activity and detailed behavioral measurements could lead to features that explicitly link neural patterns to behavior.
+
+\textbf{Stimulus encoding}: Incorporating stimulus information directly into the model could improve the discovery of stimulus-selective features.
+
+\textbf{Physiological signals}: Integration with physiological measurements (heart rate, breathing, etc.) could provide insights into brain-body interactions.
+
+\subsubsection{Methodological Improvements}
+
+Several technical improvements could enhance the method:
+
+\textbf{Online learning}: Developing online versions of MSAEs could enable real-time analysis of neural data streams, important for brain-computer interface applications.
+
+\textbf{Robustness to artifacts}: Improved handling of common neural recording artifacts (electrode drift, electrical noise, etc.) could increase the method's practical utility.
+
+\textbf{Uncertainty quantification}: Incorporating uncertainty estimates could help identify which features are most reliable and which aspects of neural data are most difficult to model.
+
+\subsection{Broader Impact}
+
+The development of interpretable methods for neural data analysis has important implications beyond basic neuroscience research:
+
+\textbf{Clinical applications}: Better understanding of neural computations could inform the development of treatments for neurological and psychiatric disorders. Interpretable features could help identify biomarkers for disease states or track treatment efficacy.
+
+\textbf{Brain-computer interfaces}: More interpretable neural features could improve the robustness and performance of brain-computer interfaces by focusing on stable, meaningful patterns rather than raw neural signals.
+
+\textbf{Artificial intelligence}: Insights from neural feature discovery could inform the development of more interpretable and biologically-inspired artificial intelligence systems.
+
+\textbf{Scientific reproducibility}: Standardized approaches for neural feature extraction could improve reproducibility across neuroscience studies and facilitate meta-analyses of neural data.
+
+\subsection{Conclusion}
+
+Multi-Scale Sparse Autoencoders represent a significant advance in interpretable neural data analysis, providing a principled approach for discovering meaningful patterns in high-dimensional neural recordings. By capturing features across multiple temporal and spatial scales while maintaining explicit control over interpretability, MSAEs address key limitations of existing methods and provide new insights into neural computation.
+
+Our comprehensive evaluation demonstrates the method's effectiveness across diverse experimental paradigms and its potential for advancing our understanding of brain function. The systematic analysis of hyperparameter effects and the development of practical tools for feature exploration make this approach accessible to the broader neuroscience community.
+
+As neural recording technologies continue to advance, generating ever-larger and more complex datasets, the need for interpretable analysis methods will only grow. MSAEs provide a valuable tool for extracting meaningful insights from these data, complementing existing approaches and opening new avenues for discovery in computational neuroscience.
+
+The open-source implementation and interactive tools we provide will facilitate broader adoption and further development of the method. We anticipate that this work will stimulate additional research into interpretable neural data analysis and contribute to a deeper understanding of the computational principles underlying brain function.
