@@ -63,6 +63,18 @@
 
 - Pros / Cons
 
+- Future work
+
+    - SCCs
+
+        - Brain diffing
+
+        - Cross-region prediction
+
+    - Sequence length
+
+        - History dependence to improve reconstructions?
+
 # DBM Paper Outline
 
 (https://data-brain-mind.github.io/#call)
