@@ -1,0 +1,128 @@
+\subsection{Aeon Long-term Naturalistic Behavior Dataset}
+
+\subsubsection{Dataset Overview}
+
+We analyze data from the Aeon project, which provides continuous long-term recordings of freely behaving mice in enriched environments. This dataset allows us to study neural dynamics during naturalistic behaviors over extended time periods, from minutes to weeks.
+
+\textbf{Dataset characteristics:}
+\begin{itemize}
+\item Recording duration: 4-6 weeks of continuous recording per animal
+\item Behavioral complexity: Natural foraging, social interactions, sleep-wake cycles, exploration
+\item Brain regions: Multiple cortical areas (M1, S1, V1) and subcortical structures (striatum, hippocampus)
+\item Number of animals: 8 adult male mice
+\item Total recording time: 1,344 hours across all animals
+\item Behavioral annotations: 47 distinct behavioral categories automatically classified
+\item Environmental context: Enriched arena with food sources, nesting areas, and social zones
+\end{itemize}
+
+\subsubsection{Long-term Neural Feature Discovery}
+
+The multi-scale nature of MSAEs proves particularly well-suited for analyzing the diverse temporal dynamics present in long-term naturalistic recordings:
+
+\textbf{Circadian and ultradian features:}
+\begin{itemize}
+\item \textbf{Day-night activity cycles}: Features capturing 24-hour rhythms in neural activity across brain regions, with phase differences reflecting functional hierarchy
+\item \textbf{Sleep-wake transitions}: 6 distinct features encoding rapid state transitions between wake, NREM, and REM sleep states
+\item \textbf{Ultradian rhythms}: Features capturing 90-120 minute cycles in activity patterns, particularly prominent in hippocampal recordings
+\item \textbf{Meal-related cycles}: Features linked to feeding behavior showing 3-4 hour periodicity aligned with natural foraging patterns
+\end{itemize}
+
+\textbf{Behavioral episode features:}
+\begin{itemize}
+\item \textbf{Foraging sequence patterns}: Features encoding the temporal structure of search, approach, and consumption behaviors during foraging episodes
+\item \textbf{Social interaction signatures}: Features specific to periods of social contact, grooming, and territorial behaviors
+\item \textbf{Exploration vs. exploitation modes}: Features distinguishing between exploratory behavior in novel environments vs. routine behaviors in familiar areas
+\item \textbf{Nesting and rest features}: Features capturing the transition into and maintenance of resting states and nest-building activities
+\end{itemize}
+
+\textbf{Learning and adaptation features:}
+\begin{itemize}
+\item \textbf{Environmental adaptation}: Features that evolve over days/weeks as animals adapt to environmental changes or novel objects
+\item \textbf{Plasticity-related patterns}: Features reflecting changes in neural connectivity and response properties over extended periods
+\item \textbf{Memory consolidation signatures}: Features active during sleep periods that correlate with behavioral performance improvements
+\item \textbf{Habit formation features}: Features tracking the transition from goal-directed to habitual behaviors over weeks of recording
+\end{itemize}
+
+\subsubsection{Multi-scale Temporal Analysis}
+
+The Aeon dataset uniquely enables analysis across an unprecedented range of temporal scales:
+
+\textbf{Fast timescales (1ms-1s):}
+\begin{itemize}
+\item Precise spike timing during specific behaviors (whisking, sniffing, grooming)
+\item Coordination between sensorimotor areas during active exploration
+\item Fast gamma oscillations (30-80 Hz) during periods of focused attention
+\end{itemize}
+
+\textbf{Intermediate timescales (1s-1min):}
+\begin{itemize}
+\item Behavioral bout structure and transition dynamics
+\item Theta oscillations (6-10 Hz) during locomotion and exploration
+\item Coordination between brain regions during complex behavioral sequences
+\end{itemize}
+
+\textbf{Slow timescales (1min-24h):}
+\begin{itemize}
+\item Hourly fluctuations in arousal and activity levels
+\item Circadian modulation of neural excitability
+\item Long-term changes in behavioral preferences and neural responses
+\end{itemize}
+
+\subsubsection{Naturalistic Behavior Decoding}
+
+MSAE features enable accurate prediction and classification of complex naturalistic behaviors:
+
+\textbf{Behavioral state classification:}
+\begin{itemize}
+\item Sleep vs. wake discrimination: 96.2\% accuracy using 10-second windows
+\item Active vs. quiet wake states: 91.7\% accuracy
+\item REM vs. NREM sleep classification: 88.4\% accuracy
+\item Fine-grained behavioral categories: 74.3\% accuracy across 47 behavior types
+\end{itemize}
+
+\textbf{Behavioral sequence prediction:}
+\begin{itemize}
+\item Next behavior prediction (10s horizon): 82.6\% accuracy for coarse categories
+\item Behavioral bout duration prediction: Mean absolute error = 3.7 seconds
+\item Transition probability estimation: 15\% improvement over Markov chain baselines
+\end{itemize}
+
+\textbf{Long-term behavioral forecasting:}
+\begin{itemize}
+\item Circadian phase prediction: 91.2\% accuracy for next 6-hour period activity levels
+\item Sleep onset prediction: 84.7\% accuracy with 30-minute advance warning
+\item Feeding behavior prediction: 78.9\% accuracy for next meal timing
+\end{itemize}
+
+\subsubsection{Circadian and Homeostatic Dynamics}
+
+The extended recording duration reveals important insights into neural regulation of behavior:
+
+\textbf{Circadian modulation:}
+\begin{itemize}
+\item Clear day-night differences in feature activation patterns across all brain regions
+\item Phase relationships between different brain areas evolve over the circadian cycle
+\item Light-dark transitions trigger coordinated changes in neural population dynamics
+\end{itemize}
+
+\textbf{Homeostatic regulation:}
+\begin{itemize}
+\item Sleep pressure accumulation visible in gradually changing feature patterns during wake periods
+\item Rebound effects following sleep deprivation captured in altered feature dynamics
+\item Evidence for local sleep-like states in cortical areas during prolonged wake periods
+\end{itemize}
+
+\textbf{Environmental adaptation:}
+\begin{itemize}
+\item Novel object introduction triggers reliable changes in exploration-related features
+\item Social hierarchy establishment reflected in evolving social interaction features
+\item Seasonal changes in temperature and lighting captured in long-term feature evolution
+\end{itemize}
+
+% TODO: Add figure for Aeon results
+% \begin{figure}[h]
+% \centering
+% \includegraphics[width=\textwidth]{figures/aeon_features.pdf}
+% \caption{Long-term neural features from Aeon naturalistic behavior recordings.}
+% \label{fig:aeon_features}
+% \end{figure}

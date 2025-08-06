@@ -1,0 +1,55 @@
+\section{Results}
+
+We evaluate our Multi-Scale Sparse Autoencoder approach on three major neural datasets, demonstrating the method's effectiveness across different brain regions, experimental paradigms, and recording techniques. Our results show that MSAEs can discover interpretable neural features while maintaining high reconstruction quality and enabling effective decoding of behavioral and stimulus variables.
+
+% Include individual dataset results
+\input{results/allen_results}
+\input{results/churchland_results}
+\input{results/aeon_results}
+
+\subsection{Cross-Dataset Analysis and Hyperparameter Insights}
+
+\subsubsection{Universal Feature Categories}
+
+Across all three datasets, we observe consistent categories of features that emerge from MSAE analysis:
+
+\begin{itemize}
+\item \textbf{Stimulus/task-specific features}: Features that respond selectively to sensory inputs or task demands
+\item \textbf{Behavioral state features}: Features that track arousal, attention, and motor activity levels
+\item \textbf{Temporal coordination features}: Features that capture synchronization and communication between brain regions
+\item \textbf{Intrinsic dynamics features}: Features reflecting ongoing neural activity patterns independent of external inputs
+\end{itemize}
+
+\subsubsection{Optimal Hyperparameter Guidelines}
+
+Based on systematic analysis across datasets, we provide practical guidelines for hyperparameter selection:
+
+\textbf{Latent dimension ($d_{\text{sae}}$):}
+\begin{itemize}
+\item Small datasets (<1000 neurons): 64-128 latents
+\item Medium datasets (1000-5000 neurons): 128-256 latents  
+\item Large datasets (>5000 neurons): 256-512 latents
+\item Rule of thumb: 0.1-0.2× the number of recorded neurons
+\end{itemize}
+
+\textbf{Top-k sparsity:}
+\begin{itemize}
+\item High interpretability focus: k = 0.05-0.1× latent dimension
+\item Balanced interpretability/reconstruction: k = 0.1-0.2× latent dimension
+\item High reconstruction focus: k = 0.2-0.3× latent dimension
+\end{itemize}
+
+\textbf{Multi-scale configuration:}
+\begin{itemize}
+\item Minimum scales: Fast (1-10ms), Medium (10-100ms), Slow (100ms-1s)
+\item Extended recordings: Add ultra-slow scale (>1s) for circadian and homeostatic dynamics
+\item Scale weights: Balance based on analysis goals (equal weights as starting point)
+\end{itemize}
+
+% TODO: Add comprehensive comparison figure
+% \begin{figure}[h]
+% \centering
+% \includegraphics[width=\textwidth]{figures/cross_dataset_summary.pdf}
+% \caption{Summary comparison of MSAE performance across all three datasets}
+% \label{fig:cross_dataset_summary}
+% \end{figure}

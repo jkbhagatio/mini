@@ -65,6 +65,12 @@
 
 - Future work
 
+    - Extend to other recording modalities
+
+        - LFP & EEG (reconstruct voltage values from C channels over T time) 
+        
+        - Calcium imaging (reconstruct dF/F values from R RoIs over T time)
+
     - SCCs
 
         - Brain diffing
@@ -75,8 +81,8 @@
 
         - History dependence to improve reconstructions?
 
-# DBM Paper Outline
+## Acknowledgements
 
-(https://data-brain-mind.github.io/#call)
+## References
 
-Same as full outline, but abbreviated Intro and Methods, and only show Results for a Churchland and Aeon dataset.
+## Appendix

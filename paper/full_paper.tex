@@ -17,7 +17,7 @@
 \usepackage{microtype}      % microtypography
 \usepackage{xcolor}         % colors
 \usepackage{graphicx}       % include graphics
-\usepackage{subcaption}     % subfigures
+\usepackage{subcaption}     % subfigures'Bu
 \usepackage{algorithm}      % algorithms
 \usepackage{algorithmic}    % algorithm formatting
 
@@ -49,17 +49,19 @@
 \maketitle
 
 \begin{abstract}
-Understanding neural computations requires identifying interpretable features from large-scale neural recordings. We present a novel application of Multi-Scale Sparse Autoencoders (MSAEs) to neural data analysis, enabling the discovery of interpretable latent features across multiple temporal and spatial scales. Our approach combines traditional Sparse Autoencoders (SAEs) with multi-scale architectures to extract meaningful neural representations from high-dimensional neural recordings. We evaluate our method on multiple large-scale datasets including Allen Neuropixels visual coding data, Churchland datasets, and Aeon recordings. Our results demonstrate that MSAEs can identify biologically relevant features while maintaining reconstruction quality, offering new insights into neural computation patterns. The discovered features show improved interpretability compared to traditional dimensionality reduction methods and enable effective decoding of behavioral and stimulus variables.
+Mechanistic understanding of the brain requires identifying interpretable latents composed 
+of large-scale neuronal computations. ...
 \end{abstract}
 
 % Include individual sections
-\input{introduction}
-\input{methods}
-\input{results}
-\input{discussion}
+\input{introduction/introduction}
+\input{methods/methods}
+\input{results/results}
+\input{discussion/discussion}
+\input{appendix/appendix}
 
 % Bibliography
-\bibliographystyle{neurips_2025}
+\bibliographystyle{unsrt}
 \bibliography{references}
 
 \end{document}

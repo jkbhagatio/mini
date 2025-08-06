@@ -1,10 +1,8 @@
 \section{Introduction}
 
-Modern neuroscience generates unprecedented volumes of high-dimensional neural data through advanced recording technologies such as Neuropixels probes and multi-electrode arrays. Understanding the computational principles underlying neural activity requires extracting interpretable features from these complex, high-dimensional recordings. Traditional dimensionality reduction techniques, while useful for visualization and basic analysis, often fail to provide the interpretability needed to understand neural computations at a mechanistic level.
+Modern neuroscience generates unprecedented volumes of high-dimensional neural data through advanced recording technologies such as Neuropixels probes and multi-electrode arrays~\cite{steinmetz2021neuropixels, raducanu2017neuroseeker, cai2016miniature, li2017large}. Understanding the computational principles underlying neural activity requires extracting interpretable features from these complex, high-dimensional recordings. Traditional dimensionality reduction techniques, while useful for visualization and basic analysis, often fail to provide the interpretability needed to understand neural computations at a mechanistic level.
 
-Sparse Autoencoders (SAEs) have emerged as a promising approach for discovering interpretable features in neural data by enforcing sparsity constraints that encourage the model to learn localized, meaningful representations. However, neural computations occur across multiple temporal and spatial scales, from millisecond-level spike timing to seconds-long behavioral epochs, and from individual neurons to large-scale network dynamics. Standard SAEs may miss important multi-scale structure in neural data.
-
-In this work, we introduce Multi-Scale Sparse Autoencoders (MSAEs) for neural data analysis, extending traditional SAEs to capture features across multiple temporal and spatial scales simultaneously. Our approach addresses several key challenges in neural data analysis:
+- Promise of SAEs...
 
 \begin{enumerate}
 \item \textbf{Multi-scale temporal dynamics}: Neural computations involve fast synaptic events, intermediate-timescale neural oscillations, and slow behavioral modulations that require different temporal resolutions for optimal feature extraction.
