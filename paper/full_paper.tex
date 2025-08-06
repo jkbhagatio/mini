@@ -20,11 +20,11 @@
 \usepackage{subcaption}     % subfigures'Bu
 \usepackage{algorithm}      % algorithms
 \usepackage{algorithmic}    % algorithm formatting
+\usepackage{array}          % for advanced table column formatting
 
 % Title and authors
 \title{
-  Mech Interp for Neuro Interp: 
-  A pipeline for interpretable latent discovery in neurobiological data
+  MINI: A pipeline for interpretable latent discovery in neurobiological data
 }
 \workshoptitle{Data on the Brain \& Mind}
 
@@ -58,10 +58,17 @@ of large-scale neuronal computations. ...
 \input{methods/methods}
 \input{results/results}
 \input{discussion/discussion}
-\input{appendix/appendix}
+
+% Horizontal line and page break indicating end of main content
+\vspace{2em} \hrule  
+\newpage
 
 % Bibliography
 \bibliographystyle{unsrt}
 \bibliography{references}
+
+\input{acknowledgements}
+
+\input{appendix/appendix}
 
 \end{document}

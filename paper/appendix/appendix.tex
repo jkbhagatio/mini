@@ -15,7 +15,7 @@
 \textbf{Training Configuration:}
 \begin{itemize}
 \item Optimizer: Adam with learning rate 1e-3
-\item Learning rate schedule: Exponential decay with γ = 0.95 every 100 epochs
+\item Learning rate schedule: Exponential decay with $\gamma$ = 0.95 every 100 epochs
 \item Batch size: 1024 time points
 \item Maximum epochs: 1000 with early stopping (patience = 50)
 \item Weight initialization: Xavier uniform for encoder, zeros for decoder bias
@@ -173,10 +173,37 @@ We assessed the stability of discovered features across multiple training runs a
 \item vs. Neural Latent Benchmark methods: Top 3 performance across multiple benchmark tasks
 \end{itemize}
 
-% TODO: Add supplementary figures
-% \begin{figure}[h]
-% \centering
-% \includegraphics[width=\textwidth]{figures/supplementary_comparison.pdf}
-% \caption{Extended comparison of MSAE with other dimensionality reduction methods}
-% \label{fig:supp_comparison}
-% \end{figure}
+\subsection{Methods Comparison Table}
+
+Here we highlight some key features of MINI and compare it with some other relevant neural LVM methods. These features are:
+\begin{itemize}
+    \item \textit{Learns temporally precise latents}: Whether the method can learn latents that are time-locked to neural events at the resolution of the desired event, down to single-spike precision.
+    \item \textit{Reveals discrete and continuous features}: Whether the method can map latents to either discrete (e.g. trial condition) or continuous (e.g. position) real-world features in the data.
+    \item \textit{Uses nonlinear dynamics}: Whether the method can use nonlinear neural dynamics when learning latents. 
+    \item \textit{Imposes latent space prior}: Whether the method imposes a prior on the latent space.
+    \item \textit{Requires trial-structured data}: Whether the method requires trial-structured data.
+    \item \textit{Supports trial-structured data}: Whether the method can incorporate trial-structured data, even if not required.
+    \item \textit{Requires multimodal data}: Whether the method requires multimodal data (e.g. video data, or various forms of behavioral data).
+    \item \textit{Supports multimodal data}: Whether the method can incorporate multimodal data, even if not required.
+\end{itemize}
+
+\newcommand{\minitrue}[1]{\textcolor{green}{#1}}
+\newcommand{\minifalse}[1]{\textcolor{red}{#1}}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{l*{8}{>{\centering\arraybackslash}m{1.225cm}}}
+\toprule
+Method & Learns temporally precise latents & Reveals discrete and continuous features & Uses nonlinear dynamics & Imposes latent space prior & Requires trial-structured data & Supports trial-structured data & Requires multimodal data & Supports multimodal data \\
+\midrule
+\textbf{MINI} & \minitrue{Yes} & \minitrue{Yes} & \minitrue{Yes} & \minitrue{No} & \minitrue{No} & \minitrue{Yes} & \minitrue{No} & \minitrue{Yes} \\
+CEBRA & \minitrue{Yes} & \minitrue{Yes} & \minifalse{No} & \minitrue{No} & \minifalse{Yes} & \minitrue{Yes} & \minifalse{Yes} & \minitrue{Yes} \\
+AutoLFADS & \minitrue{Yes} & \minitrue{Yes} & \minitrue{Yes} & \minifalse{Yes} & \minitrue{No} & \minitrue{Yes} & \minitrue{No} & \minitrue{Yes} \\
+(d)PCA & \minifalse{No} & \minifalse{No} & \minifalse{No} & \minitrue{No} & \minifalse{Yes} & \minitrue{Yes} & \minitrue{No} & \minifalse{No} \\
+(sparse/seq)NMF & \minifalse{No} & \minifalse{No} & \minifalse{No} & \minitrue{No} & \minifalse{Yes} & \minitrue{Yes} & \minitrue{No} & \minifalse{No} \\
+\bottomrule
+\end{tabular}
+\caption{Comparison of MINI with other neural LVMs.}
+\label{tab:method_comparison}
+\end{table}
