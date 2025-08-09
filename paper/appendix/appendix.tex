@@ -175,7 +175,9 @@ We assessed the stability of discovered features across multiple training runs a
 
 \subsection{Methods Comparison Table}
 
-Here we highlight some key features of MINI and compare it with some other relevant neural LVM methods. These features are:
+Here we highlight some features of neural LVM methods and create a table displaying how MINI and some other relevant methods compare against these features. Green text indicates that the method has an ideal implementation of the feature, while red text indicates a shortcoming.
+
+These features are:
 \begin{itemize}
     \item \textit{Learns temporally precise latents}: Whether the method can learn latents that are time-locked to neural events at the resolution of the desired event, down to single-spike precision.
     \item \textit{Reveals discrete and continuous features}: Whether the method can map latents to either discrete (e.g. trial condition) or continuous (e.g. position) real-world features in the data.
@@ -183,27 +185,59 @@ Here we highlight some key features of MINI and compare it with some other relev
     \item \textit{Imposes latent space prior}: Whether the method imposes a prior on the latent space.
     \item \textit{Requires trial-structured data}: Whether the method requires trial-structured data.
     \item \textit{Supports trial-structured data}: Whether the method can incorporate trial-structured data, even if not required.
-    \item \textit{Requires multimodal data}: Whether the method requires multimodal data (e.g. video data, or various forms of behavioral data).
+    \item \textit{Requires multimodal data}: Whether the method requires multimodal data (e.g. video data, or various forms of behavioral data, in addition to neural data).
     \item \textit{Supports multimodal data}: Whether the method can incorporate multimodal data, even if not required.
 \end{itemize}
 
-\newcommand{\minitrue}[1]{\textcolor{green}{#1}}
-\newcommand{\minifalse}[1]{\textcolor{red}{#1}}
+\newcommand{\goodQual}[1]{\textcolor{green}{#1}}
+\newcommand{\badQual}[1]{\textcolor{red}{#1}}
+\newcommand*\rot[1]{\rotatebox{90}{\parbox{3cm}{\centering\small #1}}}
 
+        % - hoLDS (Pillow lab)
+        % - SMC-LR-RNN
+        % - ST-NDT
+        % - iLQR-VAE
+        % - AutoLFADS
+        % - GPFA
 \begin{table}[h]
 \centering
-\small
-\begin{tabular}{l*{8}{>{\centering\arraybackslash}m{1.225cm}}}
+\setlength{\tabcolsep}{2.5pt}
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{>{\raggedright}m{5cm}|c|c|c|c|c|c|c|c|c|c|c|}
 \toprule
-Method & Learns temporally precise latents & Reveals discrete and continuous features & Uses nonlinear dynamics & Imposes latent space prior & Requires trial-structured data & Supports trial-structured data & Requires multimodal data & Supports multimodal data \\
+\textbf{Feature} & \rot{\textbf{MINI}} & \rot{PCA} & \rot{sparseNMF} & \rot{LangevinFlow} & \rot{CEBRA} & \rot{hoLDS} & \rot{SMC-LR-RNN} & \rot{ST-NDT} & \rot{iLQR-VAE} & \rot{AutoLFADS} & \rot{GPFA} \\
 \midrule
-\textbf{MINI} & \minitrue{Yes} & \minitrue{Yes} & \minitrue{Yes} & \minitrue{No} & \minitrue{No} & \minitrue{Yes} & \minitrue{No} & \minitrue{Yes} \\
-CEBRA & \minitrue{Yes} & \minitrue{Yes} & \minifalse{No} & \minitrue{No} & \minifalse{Yes} & \minitrue{Yes} & \minifalse{Yes} & \minitrue{Yes} \\
-AutoLFADS & \minitrue{Yes} & \minitrue{Yes} & \minitrue{Yes} & \minifalse{Yes} & \minitrue{No} & \minitrue{Yes} & \minitrue{No} & \minitrue{Yes} \\
-(d)PCA & \minifalse{No} & \minifalse{No} & \minifalse{No} & \minitrue{No} & \minifalse{Yes} & \minitrue{Yes} & \minitrue{No} & \minifalse{No} \\
-(sparse/seq)NMF & \minifalse{No} & \minifalse{No} & \minifalse{No} & \minitrue{No} & \minifalse{Yes} & \minitrue{Yes} & \minitrue{No} & \minifalse{No} \\
+Requires multimodal data & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} \\
+\hline
+Requires trial-structured data & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} \\
+\hline
+Supports multimodal data & \goodQual{Yes} & \badQual{No} & \badQual{No} & \goodQual{Yes} & \goodQual{Yes} \\
+\hline
+Supports trial-structured data & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} \\
+\hline
+Learns sparse, easily identifiable latents & \goodQual{Yes} & \badQual{No} & \goodQual{Yes} & \badQual{No} & \badQual{No} \\
+\hline
+Learns nested latents & \goodQual{Yes} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} \\
+\hline
+Learns temporally precise latents & \goodQual{Yes} & \badQual{No} & \badQual{No} & \goodQual{Yes} & \goodQual{Yes} \\
+\hline
+Can map latents to discrete \& continuous variables & \goodQual{Yes} & \goodQual{Yes} & \badQual{No} & \goodQual{Yes} & \goodQual{Yes} \\
+\hline
+Uses a continuously-valued latent space & \badQual{No} & \badQual{No} & \badQual{No} & \goodQual{Yes} & \badQual{No} \\
+\hline
+Imposes a prior on the latent space & \goodQual{No} & \badQual{Yes} & \goodQual{No} & \badQual{Yes} & \goodQual{No} \\
+\hline
+Uses nonlinear dynamics & \goodQual{Yes} & \badQual{No} & \badQual{No} & \goodQual{Yes} & \goodQual{Yes} \\
+\hline
+Can be used as a generative model & \goodQual{Yes} & \badQual{No} & \badQual{No} & \goodQual{Yes} & \goodQual{Yes} \\
+\hline
+Enforces neural data reconstruction & \badQual{Yes} & \goodQual{No} & \goodQual{No} & \badQual{Yes} & \goodQual{No} \\
+\hline
+Has approximate linear time scaling & \goodQual{Yes} & \goodQual{Yes} & \badQual{No} & \badQual{No} & \goodQual{Yes} \\
+\hline
+Requires significant hyperparameter tuning & \badQual{Yes} & \goodQual{No} & \badQual{Yes} & \badQual{Yes} & \badQual{Yes} \\
 \bottomrule
 \end{tabular}
-\caption{Comparison of MINI with other neural LVMs.}
+\caption{Comparison of MINI with other neural LVM methods.}
 \label{tab:method_comparison}
 \end{table}

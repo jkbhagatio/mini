@@ -2,9 +2,13 @@
 
 - Emphasize that MINI:
 
-    - Simple to understand, implement, and use (highlight in paper)
+    - Simple to understand, implement, and user-friendly (highlight in paper)
 
     - Shines in ethological / exploratory settings: "feature discovery" (highlight in paper)
+
+        - Gives you a latent ready to explore, in contrast to CEBRA and other methods, which requires you to segment a latent space, for example
+
+            - A difference between mapping individual latents, and mapping areas in the latent space.
 
     - Reveals interpretable latents (highlight in paper)
         
@@ -28,7 +32,9 @@
 
     - Can be used to find and decode continuous and discrete variables (features) (mention in paper + show in table)
 
-    
+- Highlight that high-dimensional neural data can often be well approximated by a low-dimensional latent space, which MINI can learn
+
+- Mention looking at neural latents benchmark for methods to compare to
 
 - How did setting values for `topk` and `d_sae` affect interpretability?
 
@@ -40,18 +46,45 @@
 
     - Churchland datasets
 
-    - Aeon dataset
+    - Allen datasets (supplementary)
 
-- Methods comparisons
+    - Aeon dataset 
 
-    - CEBRA
+- Methods comparisons in main results
 
-    - AutoLFADS
+    - To do a fair comparison with MINI's main goal of unsupervised interpretable latent discovery, in this work we detail comparisons with paper-published methods that:
+        1. Claim an interpretable latent space among their primary goals (as opposed to e.g. only strong decoding performance)
+        2. Don't require multimodal nor trial-structured data
+        3. Publicly share the application of their method to the Churchland MC_Maze dataset. 
+    [Methods Comparisons Table]. Among these, we visualize results from LangevinFlow and CEBRA here in the main text, as at the time of this writing they represent the neural latents benchmark [ref] state-of-the-art for an autoencoder approach and non autoencoder approach, respectively. We also include NMF and PCA as baselines, as they are widely used methods for dimensionality reduction and latent extraction in neural data.
 
-    - (d)PCA
+    - Main text comparisons
 
-    - (sparse/seq)NMF
+        - LangevinFlow VAE ([Song et al., 2025a](https://arxiv.org/html/2507.11531v1))
+        - CEBRA ([Schneider et al., 2023](https://www.nature.com/articles/s41586-023-06031-6))
+        - PCA
+        - (sparse)NMF
+    
+    - Full table comparisons
 
+        - LangevinFlow VAE ([Song et al., 2025a](https://arxiv.org/html/2507.11531v1))
+        - CEBRA ([Schneider et al., 2023](https://www.nature.com/articles/s41586-023-06031-6))
+        - PCA (Hotelling 1933)
+        - (sparse)NMF (Hoyer 2004)
+        - hoLDS (Pillow lab)
+        - SMC-LR-RNN
+        - ST-NDT
+        - iLQR-VAE
+        - AutoLFADS
+        - GPFA
+
+- Comparative analysis
+
+    - Decoding results
+
+    - Training time
+
+    - Inference time
 
 # Paper (main)
 
@@ -132,34 +165,12 @@
     - Sequence length
 
         - History dependence to improve reconstructions?
+    
+    - Impose smoothness on latent space
 
-Method table comparison:
-
-Here we highlight some key features of MINI and compare it with some other relevant neural LVM methods. These features are:
-
-- *Learns temporally precise latents*: Whether the method can learn latents that are time-locked to neural events at the resolution of the desired event, down to single-spike precision.
-
-- *Reveals discrete and continuous features*: Whether the method can map latents to either discrete (e.g. trial condition) or continuous (e.g. position) real-world features in the data.
-
-- *Incorporates nonlinear dynamics*: Whether the method can use nonlinear neural dynamics when learning latents. 
-
-- *Imposes latent space prior*: Whether the method imposes a prior on the latent space.
-
-- *Requires trial-structured data*: Whether the method requires trial-structured data.
-
-- *Supports trial-structured data*: Whether the method can incorporate trial-structured data, even if not required.
-
-- *Requires multimodal data*: Whether the method requires multimodal data (e.g. video data, or various forms of behavioral data).
-
-- *Supports multimodal data*: Whether the method can incorporate multimodal data, even if not required.
-
-| Method | Learns temporally precise latents | Reveals discrete and continuous features | Incorporates nonlinear dynamics | Imposes latent space prior | Requires trial-structured data | Supports trial-structured data | Requires multimodal data | Supports multimodal data |
-|--------|----------------------------------------|---------------------------|----------------------------|-------------------------------|-------------------------------|--------------------------|--------------------------| ---------------------------|
-| MINI | Yes | Yes | Yes | No | Yes | No | Yes | No |
-| CEBRA | Yes | Yes | No | No | Yes | No | Yes | No |
-| AutoLFADS | Yes | Yes | No | No | Yes | No | Yes | No |
-| (d)PCA | No | No | Yes | No | Yes | No | Yes | No |
-| (sparse/seq)NMF | No | No | Yes | No | Yes | No | Yes | No |
+        - Predict next latent space from previous latent space
+    
+    - Neural latents benchmark scores: compare with other methods
 
 # Paper (supplementary)
 
@@ -171,10 +182,41 @@ Here we highlight some key features of MINI and compare it with some other relev
 
 ### Data and code availability
 
-    - Model and feature viz details
+- Model and feature viz details
 
 ### Additional results
 
 - Allen datasets
 
 ### Method table comparison
+
+#### Main text comparisons
+
+- LangevinFlow VAE (Song et al., 2025)
+- CEBRA (Schneider et al., 2023)
+- PCA
+- (sparse)NMF
+
+#### Methods table comparisons
+
+
+
+#### Other methods to mention
+
+- SIMPL (George et al., 2025)
+- MINT (Perkins et al., 2025)
+- NCE (Schmutz et al., 2025)
+- MtM (Zhang et al. 2024)
+- SSMDM (Huang et al., 2024)
+- DPAD (Sani et al. 2024)
+- sliceTCA (Pellegrino et al., 2024)
+- MM-GP-VAE (Gondur et al., 2023)
+- NDT2 (Ye et al., 2023)
+- TNDM (Hurwitz et al., 2021)
+- Ctrl-TNDM
+- PLNDE (Kim et al., 2021)
+- M-GPL-VM (Jensen et al., 2020)
+- VIND (Hernandez et al., 2020)
+- MIND (Low et al., 2018)
+- pfLDS (Gao et al., 2016)
+- PLDS (Macke et al., 2011
