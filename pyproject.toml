@@ -32,6 +32,8 @@ torchinfo = "*"
 torchtext = "*"
 torchvision = { version = "==0.20.1+cu121" }
 wandb = "*"
+cebra = "==0.4.0"
+temporaldata = "*"
 
 [tool.pixi.dependencies]
 datasets = { version = ">=2.14.6" }
@@ -56,6 +58,7 @@ tqdm = "*"
 typeguard = "*"
 rich = "*"
 ruff = "*"
+h5py = "*"
 
 [tool.pixi.tasks]
 
