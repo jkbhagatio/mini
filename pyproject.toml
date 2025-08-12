@@ -50,7 +50,7 @@ pandas = { version = "==1.5.3" }
 plotly = { version = ">=5.23.0,<6" }
 pyright = "*"
 pytest = "*"
-scikit-learn = "*"
+scikit-learn = "==1.5.2"
 scipy = { version = "<1.11" }
 seaborn = "*"
 submitit = "*"
