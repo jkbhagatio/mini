@@ -32,6 +32,8 @@
 
     - Can be used to find and decode continuous and discrete variables (features) (mention in paper + show in table)
 
+    - Can be used with different modalities of neural data (e.g. spike, 2p, LFP)
+
 - Highlight that high-dimensional neural data can often be well approximated by a low-dimensional latent space, which MINI can learn
 
 - Mention looking at neural latents benchmark for methods to compare to
@@ -52,7 +54,7 @@
 
 - Methods comparisons in main results
 
-    - To do a fair comparison with MINI's main goal of unsupervised interpretable latent discovery, in this work we detail comparisons with paper-published methods that:
+    - To do a fair comparison with MINI's main goal of unsupervised interpretable latent discovery, we detail comparisons with paper-published methods that:
         1. Claim an interpretable latent space among their primary goals (as opposed to e.g. only strong decoding performance)
         2. Don't require multimodal nor trial-structured data
         3. Publicly share the application of their method to the Churchland MC_Maze dataset. 
@@ -80,17 +82,39 @@
 
 - Comparative analysis
 
+    - Finding interpretable latents
+
     - Decoding results
 
-    - Training time
-
-    - Inference time
+    - Training/Inference time
 
 # Paper (main)
 
 ## Introduction
 
-- Related work
+### Latent space vs. latent interpretables
+
+- We don't need to model the entire latent space to find interpretable latents
+
+- All dynamical systems are Markovian when the state space is appropriately augmented. Non-Markovianity is often a property of the observer's representation, not of the system itself.
+
+- Takens' theorem: you can reconstruct a dynamical system's attractor from time-lagged observations
+
+- Perhaps usefulness of non-Markovian methods (e.g., that include explicit recurrence or spike history) is just due to our incomplete or coarse-grained observations of brain state.
+
+    - In recurrent neural networks, the hidden state is updated recurrently — but the forward dynamics are Markovian in the hidden state.
+
+    - When modeling spike trains with history filters (Pillow et al. 2008), we augment the state to improve predictive performance. But this is conceptually the same as saying: "We’re trying to approximate the brain’s internal Markov state using externally observable quantities."
+
+- Related Perspectives in the Literature
+
+  - Churchland et al. (2012) (Neural population dynamics during reaching) argue that neural dynamics in motor cortex can be modeled as a low-dimensional dynamical system — implicitly Markovian in the population state.
+
+  - Sussillo & Barak (2013) (Opening the black box: low-dimensional dynamics in high-dimensional RNNs) show how RNNs learn internal state trajectories that can be Markovian even if the input/output behavior looks non-Markovian.
+
+  - Predictive coding and Friston's free energy principle work assumes the brain maintains sufficient internal beliefs (states) to make predictions, which again implies a Markovian internal state process.
+
+### Related work
 
 ## Methods
 
