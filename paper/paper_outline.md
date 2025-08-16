@@ -34,10 +34,6 @@
 
     - Can be used with different modalities of neural data (e.g. spike, 2p, LFP)
 
-- Highlight that high-dimensional neural data can often be well approximated by a low-dimensional latent space, which MINI can learn
-
-- Mention looking at neural latents benchmark for methods to compare to
-
 - How did setting values for `topk` and `d_sae` affect interpretability?
 
     - How did we go about setting these in general?
@@ -54,11 +50,12 @@
 
 - Methods comparisons in main results
 
-    - To do a fair comparison with MINI's main goal of unsupervised interpretable latent discovery, we detail comparisons with paper-published methods that:
+    - To do a fair comparison with MINI's main goal of unsupervised interpretable latent discovery, we detail comparisons [Methods Comparisons Table] with paper-published methods that:
         1. Claim an interpretable latent space among their primary goals (as opposed to e.g. only strong decoding performance)
         2. Don't require multimodal nor trial-structured data
         3. Publicly share the application of their method to the Churchland MC_Maze dataset. 
-    [Methods Comparisons Table]. Among these, we visualize results from LangevinFlow and CEBRA here in the main text, as at the time of this writing they represent the neural latents benchmark [ref] state-of-the-art for an autoencoder approach and non autoencoder approach, respectively. We also include NMF and PCA as baselines, as they are widely used methods for dimensionality reduction and latent extraction in neural data.
+    
+    Among these, we visualize results from LangevinFlow and CEBRA, as they represent current neural latents benchmark [ref] state-of-the-art methods for an autoencoder approach and non autoencoder approach, respectively. We also include NMF and PCA as baselines, as they are widely used methods for dimensionality reduction and latent extraction in neural data.
 
     - Main text comparisons
 
@@ -69,16 +66,12 @@
     
     - Full table comparisons
 
-        - LangevinFlow VAE ([Song et al., 2025a](https://arxiv.org/html/2507.11531v1))
-        - CEBRA ([Schneider et al., 2023](https://www.nature.com/articles/s41586-023-06031-6))
         - PCA (Hotelling 1933)
         - (sparse)NMF (Hoyer 2004)
-        - hoLDS (Pillow lab)
-        - SMC-LR-RNN
+        - LangevinFlow VAE ([Song et al., 2025a](https://arxiv.org/html/2507.11531v1))
+        - CEBRA ([Schneider et al., 2023](https://www.nature.com/articles/s41586-023-06031-6))
         - ST-NDT
-        - iLQR-VAE
         - AutoLFADS
-        - GPFA
 
 - Comparative analysis
 
@@ -94,7 +87,7 @@
 
 ### Latent space vs. latent interpretables
 
-- We don't need to model the entire latent space to find interpretable latents
+- We don't need to explicitly model the entire latent space to find interpretable latents
 
 - All dynamical systems are Markovian when the state space is appropriately augmented. Non-Markovianity is often a property of the observer's representation, not of the system itself.
 
@@ -125,6 +118,8 @@
 - MSAEs
 
 ### Pipeline
+
+(Spike sorter output -> feature extraction)
 
 - Neural data preprocessing
 
@@ -166,7 +161,12 @@
 
 - Summary
 
-- Pros / Cons
+- Pros & Cons / Limitations
+
+  - - Interpretable latents in 2 regards:
+  - feature they correspond to
+  - neurons that contribute to them
+    - Real-time 'steering': opto of cells that contribute to a specific latent
 
 - Future work
 
@@ -228,19 +228,21 @@
 #### Other methods to mention
 
 - SIMPL (George et al., 2025)
-- MINT (Perkins et al., 2025)
 - NCE (Schmutz et al., 2025)
+- MINT (Perkins et al., 2024)
+- SMC-LR-RNN (Pals et al., 2024)
 - MtM (Zhang et al. 2024)
-- SSMDM (Huang et al., 2024)
+- MM-GP-VAE (Gondur et al., 2024)
 - DPAD (Sani et al. 2024)
 - sliceTCA (Pellegrino et al., 2024)
-- MM-GP-VAE (Gondur et al., 2023)
 - NDT2 (Ye et al., 2023)
+- iLQR-VAE (Schimel et al., 2022)
 - TNDM (Hurwitz et al., 2021)
-- Ctrl-TNDM
+- Ctrl-TNDM (Kudryashova et al., 2023)
 - PLNDE (Kim et al., 2021)
 - M-GPL-VM (Jensen et al., 2020)
 - VIND (Hernandez et al., 2020)
 - MIND (Low et al., 2018)
 - pfLDS (Gao et al., 2016)
-- PLDS (Macke et al., 2011
+- PLDS (Macke et al., 2011)
+- GPFA (Yu et al., 2009)
