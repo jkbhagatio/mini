@@ -1,12 +1,11 @@
 \documentclass{article}
 
-% NeurIPS 2025 style files
+\PassOptionsToPackage{super,sort&compress}{natbib}
 \usepackage{neurips_2025}
-\usepackage{graphicx}
-\usepackage{adjustbox}
 % \usepackage[dblblindworkshop, final]{neurips_2025}
 
-% Standard packages
+% Standard packages\usepackage{graphicx}
+\usepackage{adjustbox}
 \usepackage[utf8]{inputenc} % allow utf-8 input
 \usepackage[T1]{fontenc}    % use 8-bit T1 fonts
 \usepackage{hyperref}       % hyperlinks
@@ -25,6 +24,8 @@
 \usepackage{algorithm}      % algorithms
 \usepackage{algorithmic}    % algorithm formatting
 \usepackage{array}          % for advanced table column formatting
+
+\setcitestyle{super,comma,sort&compress}
 
 % Title and authors
 \title{

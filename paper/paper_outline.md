@@ -42,6 +42,10 @@
 
     - Artificial dataset (e.g. that used in CEBRA paper)
 
+      - Use RatInABox or NeuralPlayground or OurOwnMethod to construct ground-truth interpretable latents, and show that MINI can find them all
+    
+        - If can find all or almost all, then we're good with this alone! If not, then we need to show comparison to other methods to show it's not significantly worse. First option is ideal!
+
     - Churchland datasets
 
     - Allen datasets (supplementary)
@@ -134,6 +138,12 @@
 - Evaluating features
 
 ## Results
+
+- Ref methods comparison table
+
+- Latents that can map to either discrete or continuous, environmental or behavioral features
+- Same animal, cross-session, same features
+- Hierarchical features
 
 ### Allen Neuropixels visual coding datasets
 
