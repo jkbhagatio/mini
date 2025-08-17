@@ -89,39 +89,21 @@
 
 ## Introduction
 
-### Latent space vs. latent interpretables
+- Motivation
 
-- We don't need to explicitly model the entire latent space to find interpretable latents
+  - Need to interpret large-scale neural recordings
 
-- All dynamical systems are Markovian when the state space is appropriately augmented. Non-Markovianity is often a property of the observer's representation, not of the system itself.
+  - Need dimensionality reduction / LVMs to do this
+  
+  - Existing methods have many limitations, particularly in regards to interpretability of latent spaces
 
-- Takens' theorem: you can reconstruct a dynamical system's attractor from time-lagged observations
+- How MINI addresses these limitations + can be used with virtually any neural recording modality
 
-- Perhaps usefulness of non-Markovian methods (e.g., that include explicit recurrence or spike history) is just due to our incomplete or coarse-grained observations of brain state.
-
-    - In recurrent neural networks, the hidden state is updated recurrently — but the forward dynamics are Markovian in the hidden state.
-
-    - When modeling spike trains with history filters (Pillow et al. 2008), we augment the state to improve predictive performance. But this is conceptually the same as saying: "We’re trying to approximate the brain’s internal Markov state using externally observable quantities."
-
-- Related Perspectives in the Literature
-
-  - Churchland et al. (2012) (Neural population dynamics during reaching) argue that neural dynamics in motor cortex can be modeled as a low-dimensional dynamical system — implicitly Markovian in the population state.
-
-  - Sussillo & Barak (2013) (Opening the black box: low-dimensional dynamics in high-dimensional RNNs) show how RNNs learn internal state trajectories that can be Markovian even if the input/output behavior looks non-Markovian.
-
-  - Predictive coding and Friston's free energy principle work assumes the brain maintains sufficient internal beliefs (states) to make predictions, which again implies a Markovian internal state process.
-
-### Related work
+- Latent space vs. interpretable latents overview: we just care about interpretable latents
 
 ## Methods
 
-### Model
-
-- SAEs
-
-- MSAEs
-
-### Pipeline
+### Pipeline Overview
 
 (Spike sorter output -> feature extraction)
 
@@ -137,21 +119,34 @@
 
 - Evaluating features
 
+### Model Architecture
+
+- SAEs
+
+- MSAEs
+
 ## Results
 
 - Ref methods comparison table
 
-- Latents that can map to either discrete or continuous, environmental or behavioral features
-- Same animal, cross-session, same features
+- Discrete and continuous, environmental and behavioral features
+- Same animal, cross-session: same features
 - Hierarchical features
-
-### Allen Neuropixels visual coding datasets
-
-- Highlighting a few found features (latents)
-
 - Comparing found latents with other methods
 
-- Decoding results from SAE feature spikes
+### Synthetic (RatInABox?) dataset
+
+- True features
+
+    - 8 total
+
+        - High pos velocity point1, high neg velocity point1, high pos velocity point2, high neg velocity point2, pos1, pos2, pos3, pos4
+
+        - Mapping of each of these features to individual latents
+
+        - Decoding position and velocity from latents alone
+
+    - Made from two pairs of single-cell place cells with slightly overlapping place-fields
 
 ### Churchland datasets
 
@@ -159,13 +154,21 @@
 
 - Comparing found latents with other methods
 
-- Decoding results from SAE feature spikes
+- Decoding results from SAE features
+
+### Allen Neuropixels visual coding datasets
+
+- Highlighting a few found features (latents)
+
+- Comparing found latents with other methods
+
+- Decoding results from SAE features
 
 ### Aeon dataset
 
 - Highlighting a few found features (latents)
 
-- Decoding results from SAE feature spikes
+- Decoding results from SAE features
 
 ## Discussion
 
