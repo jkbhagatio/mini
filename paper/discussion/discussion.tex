@@ -6,20 +6,16 @@
 This paper makes the following key contributions:
 
 \begin{enumerate}
-\item We introduce Multi-Scale Sparse Autoencoders (MSAEs) specifically designed for neural data analysis, extending traditional SAEs to capture multi-scale temporal and spatial patterns.
+\item We introduce a pipeline for applying sparse dictionary learning methods specifically designed to discover interpretable neurobiological latents ("features").
 
-\item We develop a comprehensive pipeline for neural data preprocessing, model training, evaluation, and feature interpretation that can be applied across different experimental paradigms.
+\item Our pipeline is end-to-end from spatiotemporally binned neural data to interpretable latent discovery: containns functionality for neural data preprocessing, model training, model evaluation, and feature evaluation.
 
-\item We provide systematic evaluation on multiple large-scale neural datasets, demonstrating the effectiveness of our approach across different brain regions, recording techniques, and experimental conditions.
+\item We provide systematic evaluation on multiple synthetic and natural large-scale neurobiological datasets, demonstrating the effectiveness of our approach across different species, brain regions, recording techniques, experimental conditions, and spatiotemporal scales.
 
 \item We show that MSAE-derived features enable effective decoding of behavioral and stimulus variables, validating their biological relevance.
 
-\item We release open-source implementations and interactive tools for feature exploration, facilitating broader adoption in the neuroscience community.
+\item We release our code open-source with interactive tutorials for facilitating broader adoption in the neuroscience community.
 \end{enumerate}
-
-\subsection{Summary}
-
-In this work, we introduced a multi-scale sparse autoencoder (MSAE) for discovering interpretable neural features from large-scale electrophysiology datasets. Our approach effectively captures neural dynamics across multiple temporal resolutions, revealing features that correspond to known and novel aspects of neural computation.
 
 \subsection{Pros and Cons}
 
@@ -32,23 +28,36 @@ In this work, we introduced a multi-scale sparse autoencoder (MSAE) for discover
 
 \textbf{Limitations}:
 \begin{itemize}
-    \item \textbf{Hyperparameter sensitivity}: Model performance is sensitive to the choice of hyperparameters, requiring careful tuning and validation.
-    \item \textbf{Causality}: While our model reveals correlational structure, it does not inherently infer causal relationships between neural features and behavior.
-    \item \textbf{Biological realism}: The model is a simplified representation of neural circuits and does not capture all aspects of biological complexity.
+    \item Model performance is sensitive to the choice of hyperparameters, requiring careful tuning and validation.
+    \item  While our model reveals correlational structure, it does not inherently infer causal relationships between neural features and behavior.
+    \item The model is a simplified representation of neural circuits and does not capture all aspects of biological complexity.
     \item Latent interpretability is subject to human subjectivity.
 \end{itemize}
 
 \subsection{Future Work}
 
-\subsubsection{Extend to other recording modalities}
-Our framework can be extended to other neural recording modalities. For LFP and EEG data, the model can be adapted to reconstruct voltage values across channels over time. For calcium imaging, it can reconstruct dF/F signals from regions of interest (ROIs).
-
-\subsubsection{Spatio-Temporal Convolutional Components (SCCs)}
-Future work will explore the use of spatio-temporal convolutional components (SCCs) to model neural dynamics more explicitly. This could enable applications such as:
 \begin{itemize}
-    \item \textbf{Brain diffing}: Identifying differences in neural dynamics across experimental conditions or subject groups.
-    \item \textbf{Cross-region prediction}: Predicting neural activity in one brain region based on activity in another.
-\end{itemize}
+    
+    \item Actually apply to other recording modalities
+    \begin{itemize}
+        \item LFP \& EEG (reconstruct voltage values from C channels over T time)
+        \item Calcium imaging (reconstruct dF/F values from R RoIs over T time)
+    \end{itemize}
+    
+    \item Actually apply to multimodal data
+    \begin{itemize}
+        \item e.g. reconstruct spikes from spikes + multimodal behavior (e.g. pose-tracking, gaze-tracking, etc.)
+    \end{itemize}
+    
+    \item Use history to improve reconstructions and feature interpretability?
+    \begin{itemize}
+        \item While our codebase optionally allows for using history length, in practice we did not get improved reconstructions nor more interpretable latents, but in theory this approach could be improved to do so.
+    \end{itemize}
+    
+    \item CLTs \& SCCs
+    \begin{itemize}
+        \item Cross-region prediction
+        \item Brain diffing
+    \end{itemize}
 
-\subsubsection{Sequence Length and History Dependence}
-Investigating the role of sequence length and history dependence could improve reconstruction accuracy and reveal features that depend on longer time scales. Recurrent or temporal convolutional network components could be integrated into the model to capture these dependencies.
+\end{itemize}

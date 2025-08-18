@@ -197,7 +197,7 @@
 
 ## Discussion
 
-- Summary
+- Summary + Main Contributions
 
 - Pros & Cons / Limitations
 
@@ -208,31 +208,25 @@
 
 - Future work
 
-    - Extend to other recording modalities
+    - Actually apply to other recording modalities
 
         - LFP & EEG (reconstruct voltage values from C channels over T time) 
         
         - Calcium imaging (reconstruct dF/F values from R RoIs over T time)
 
-    - Extend to multimodal data
+    - Actually apply to multimodal data
 
         - e.g. reconstruct spikes from spikes + multimodal behavior (e.g. pose-tracking, gaze-tracking, etc.)
 
-    - SCCs
+    - Use history to improve reconstructions and feature interpretability?
 
-        - Brain diffing
+        - While our codebase optionally allows for using history length, in practice we did not get improved reconstructions nor more interpretable latents, but in theory this approach could be improved to do so. 
+
+    - CLTs & SCCs
 
         - Cross-region prediction
 
-    - Sequence length
-
-        - History dependence to improve reconstructions?
-    
-    - Impose smoothness on latent space
-
-        - Predict next latent space from previous latent space
-    
-    - Neural latents benchmark scores: compare with other methods
+        - Brain diffing
 
 ---
 
