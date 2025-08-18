@@ -1,111 +1,34 @@
-\subsection{Churchland Motor Cortical Datasets}
+\subsection{Natural macaque spike data in a reaching task}
 
-\subsubsection{Dataset Overview}
+Here we compare MINI to other popular methods that have also been applied to this dataset.
 
-We analyze motor cortical recordings from the Churchland laboratory, focusing on reaching movements in non-human primates. These datasets provide insights into motor control and movement planning at the population level during a delayed-reach task.
+To do a fair comparison with MINI's main goal of unsupervised interpretable latent discovery, we detail comparisons (Table~\ref{table:method_comparisons}) with paper-published methods that:
 
-\textbf{Dataset characteristics:}
+\begin{enumerate}
+\item Claim an interpretable latent space among their primary goals (as opposed to e.g. only strong decoding performance)
+\item Don't require multimodal nor trial-structured data
+\end{enumerate}
+    
+Among these, we visualize results from LangevinFlow and CEBRA, as they represent current neural latents benchmark[ref] state-of-the-art methods for an autoencoder approach and non autoencoder approach, respectively. 
+
+We also include sparseNMF[ref], t-SNE[ref], and UMAP[ref] as baselines, as they are widely used general methods for dimensionality reduction and latent extraction.
+(We don't show ICA, as (ICA < CEBRA) nor PCA, as (PCA < sparseNMF) ).
+
+Brief dataset info...
 \begin{itemize}
-\item Brain regions: Primary motor cortex (M1) and dorsal premotor cortex (PMd)
-\item Task paradigm: Delayed reaching movements to 8 peripheral targets
-\item Number of sessions: 32 experimental sessions across 2 animals
-\item Recorded neurons: 156 ± 23 well-isolated units per session
-\item Trial structure: 500ms preparatory delay + 400ms movement epoch
-\item Total trials analyzed: 18,432 successful reach trials
+    \item Task info \& metadata
+    \item Brain regions \& units
 \end{itemize}
 
-\subsubsection{Motor Control Feature Discovery}
-
-MSAE analysis of motor cortical data reveals temporally and functionally distinct feature categories relevant to movement control:
-
-\textbf{Preparatory activity features:}
-\begin{itemize}
-\item \textbf{Target-specific preparatory states}: 12 distinct features encoding intended reach direction during delay period, showing clear directional tuning (mean vector length: 0.73 ± 0.08)
-\item \textbf{Ramping dynamics}: Features capturing the characteristic ramping activity leading to movement onset, with temporal profiles ranging from 200-500ms pre-movement
-\item \textbf{Population rotation features}: Features encoding the rotational dynamics in neural state space during movement preparation, consistent with dynamical systems models of motor cortex
-\end{itemize}
-
-\textbf{Movement execution features:}
-\begin{itemize}
-\item \textbf{Direction-tuned features}: 8 primary features showing clear cosine tuning to reach direction (mean R² = 0.81 ± 0.12)
-\item \textbf{Velocity encoding features}: Features tracking hand velocity components with temporal lags of 50-100ms, enabling accurate movement decoding
-\item \textbf{Coordination features}: Features organizing population activity during movement execution, showing stereotyped activation patterns across trials
-\end{itemize}
-
-\textbf{Multi-scale temporal features:}
-\begin{itemize}
-\item \textbf{Fast features (1-10ms)}: Capturing precise spike timing relationships and short-timescale synchrony between motor cortical neurons
-\item \textbf{Intermediate features (10-100ms)}: Reflecting neural oscillations in beta (15-30 Hz) and gamma (30-80 Hz) frequency ranges
-\item \textbf{Slow features (100ms-1s)}: Tracking movement trajectories and behavioral epoch transitions
-\end{itemize}
-
-\subsubsection{Comparison with Established Methods}
-
-We compare our approach with state-of-the-art methods for motor cortical data analysis:
-
-\textbf{vs. Factor Analysis (FA):}
-\begin{itemize}
-\item MSAE features show 2.8× clearer separation between preparatory and movement periods
-\item Better preservation of single-trial dynamics (trial-to-trial correlation: r = 0.84 vs 0.67)
-\item More robust feature identification across different experimental sessions
-\end{itemize}
-
-\textbf{vs. Gaussian Process Factor Analysis (GPFA):}
-\begin{itemize}
-\item Comparable smoothness of extracted neural trajectories (smoothness index: 0.91 vs 0.94)
-\item Superior performance on discrete trial classification tasks (+18\% accuracy improvement)
-\item Better handling of multiple temporal scales simultaneously
-\end{itemize}
-
-\textbf{vs. Canonical Correlation Analysis (CCA):}
-\begin{itemize}
-\item MSAE captures more behaviorally-relevant variance (explained variance: 67\% vs 54\%)
-\item Improved generalization to novel movement conditions
-\item More interpretable feature structure with clear motor correlates
-\end{itemize}
-
-\subsubsection{Motor Decoding Performance}
-
-MSAE features enable highly accurate decoding of movement-related variables:
-
-\textbf{Reach direction decoding:}
-\begin{itemize}
-\item 8-way direction classification: 91.7\% accuracy (vs. 84.2\% baseline methods)
-\item Improvement over traditional methods: +7.5\% average increase
-\item Cross-session generalization: 85.3\% accuracy (only 6.4\% performance drop)
-\end{itemize}
-
-\textbf{Movement kinematics decoding:}
-\begin{itemize}
-\item Hand velocity prediction: Pearson r = 0.87 ± 0.09 (x-component), r = 0.84 ± 0.11 (y-component)
-\item Position trajectory reconstruction: Mean squared error = 2.3 cm²
-\item Prediction horizon: Accurate decoding up to 150ms before movement onset
-\end{itemize}
-
-\textbf{Movement timing prediction:}
-\begin{itemize}
-\item Reaction time prediction: Mean absolute error = 47ms
-\item Movement onset detection: 89.3\% accuracy within 50ms window
-\item Movement offset prediction: 85.7\% accuracy
-\end{itemize}
-
-\subsubsection{Neural Dynamics Analysis}
-
-The multi-scale nature of MSAEs reveals important insights into motor cortical dynamics:
-
-\textbf{State-space dynamics:}
-\begin{itemize}
-\item Clear identification of preparatory and movement subspaces with minimal overlap
-\item Rotational dynamics during movement execution consistent with recent dynamical systems theories
-\item Evidence for condition-invariant neural trajectories across different reach targets
-\end{itemize}
-
-\textbf{Temporal coordination:}
-\begin{itemize}
-\item Features reveal precise temporal coordination between M1 and PMd populations
-\item Identification of leader-follower relationships in different movement phases
-\item Discovery of fast timescale interactions (5-10ms) during movement initiation
-\end{itemize}
+Features found and decoding accuracy comparisons with LangevinFlow and CEBRA...
+\begin{enumerate}
+    \item Direction
+    \item Velocity
+    \item Movement onset
+    \item Trial type
+    \item Features across different timescales (i.e. that persevere for different durations)
+    \item Communication across brain regions??
+\end{enumerate}
 
 % TODO: Add figure references for motor cortex results
 % \begin{figure}[h]

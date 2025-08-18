@@ -61,21 +61,28 @@
     
     Among these, we visualize results from LangevinFlow and CEBRA, as they represent current neural latents benchmark [ref] state-of-the-art methods for an autoencoder approach and non autoencoder approach, respectively. We also include NMF and PCA as baselines, as they are widely used methods for dimensionality reduction and latent extraction in neural data.
 
-    - Main text comparisons
+    - Main text viz comparisons
 
         - LangevinFlow VAE ([Song et al., 2025a](https://arxiv.org/html/2507.11531v1))
         - CEBRA ([Schneider et al., 2023](https://www.nature.com/articles/s41586-023-06031-6))
-        - PCA
+        
+    - Supplementary viz comparisons
+        
+        - UMAP
+        - t-SNE
         - (sparse)NMF
     
-    - Full table comparisons
+    - Supplementary, full table comparisons
 
-        - PCA (Hotelling 1933)
-        - (sparse)NMF (Hoyer 2004)
         - LangevinFlow VAE ([Song et al., 2025a](https://arxiv.org/html/2507.11531v1))
         - CEBRA ([Schneider et al., 2023](https://www.nature.com/articles/s41586-023-06031-6))
         - ST-NDT
         - AutoLFADS
+        - UMAP
+        - t-SNE
+        - (sparse)NMF (Hoyer 2004)
+        - ICA
+        - PCA (Hotelling 1933)
 
 - Comparative analysis
 
@@ -141,10 +148,12 @@
 
 - Ref method comparisons table
 
-- Discrete and continuous, environmental and behavioral features
-- Same animal, cross-session: same features
-- Hierarchical features
-- Comparing found latents with other methods
+- Highlght finding following types of features:
+    - Discrete and continuous, environmental and behavioral
+    - Same-animal, cross-session; Cross-animal same-session
+    - Hierarchical features
+
+- Compare found latents with other methods
 
 ### Synthetic (RatInABox?) dataset
 
@@ -168,14 +177,6 @@
 
 - Decoding results from SAE features
 
-### Allen Neuropixels visual coding datasets
-
-- Highlighting a few found features (latents)
-
-- Comparing found latents with other methods
-
-- Decoding results from SAE features
-
 ### Aeon dataset
 
 - Highlighting a few found features (latents)
@@ -188,10 +189,10 @@
 
 - Pros & Cons / Limitations
 
-  - - Interpretable latents in 2 regards:
-  - feature they correspond to
-  - neurons that contribute to them
-    - Real-time 'steering': opto of cells that contribute to a specific latent
+    - Interpretable latents in 2 regards:
+        - Feature they correspond to
+        - Neurons that contribute to them
+            - Real-time 'steering': opto of cells that contribute to a specific latent
 
 - Future work
 
@@ -237,9 +238,31 @@
 
 ### Additional model details
 
+- Hyperparameter selection
+
+- See [./notes.md](./notes.md)
+
+### Additional training details
+
+- Hyperparameter selection
+
+- See [./notes.md](./notes.md)
+
+### Additional dataset info
+
 ### Additional results
 
-- Allen datasets
+#### Comparisons to methods not developed on neural data
+
+- UMAP, t-SNE, sparseNMF
+
+#### Allen Neuropixels visual coding datasets
+
+- Highlighting a few found features (latents)
+
+- Comparing found latents with other methods
+
+- Decoding results from SAE features
 
 ### Method comparisons
 

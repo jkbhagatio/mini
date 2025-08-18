@@ -1,4 +1,4 @@
-\subsection{Pipeline Overview}
+\subsection{Pipeline overview}
 
 - Overall: MINI takes in high-dimensional neural data and outputs latents to evaluate
 
@@ -18,6 +18,10 @@
     \item Model training
     \begin{itemize}
         \item Hyperparameter optimization
+        \begin{itemize}
+            \item Model parameters
+            \item Optimizer parameters
+        \end{itemize}
         \item By default no validation set, but can be added if we want to e.g. apply to other recordings of same animal, though this is not generally recommended (just train a freshie)
     \end{itemize}
     
@@ -33,7 +37,7 @@
     
     \item Feature evaluation
     \begin{itemize}
-        \item When a latent is deemed sufficiently interpretable, we call this a feature.
+        \item When a latent is subjectively determined to be sufficiently interpretable, we call this a feature.
         \item Interactive plots showing feature activation patterns across time and experimental conditions.
         \item We evaluate its decoding performance?
         \item Export functionality.

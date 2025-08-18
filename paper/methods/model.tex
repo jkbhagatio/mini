@@ -1,41 +1,17 @@
-\subsection{Model Architecture}
-
-- Variant of MSAE as variant of SAE.
-
-- Usefulness in Mech interp.
-
-- Latex formulas for encoder, decoder, total loss.
-
-\subsubsection{Multi-Scale Sparse Autoencoders (MSAEs)}
-
-To capture features across multiple temporal scales, we extend the SAE architecture to process neural data at different temporal resolutions simultaneously. Our MSAE consists of multiple parallel encoding pathways, each operating at a different temporal scale.
-
-For temporal scales $s \in \{s_1, s_2, \ldots, s_K\}$, we create downsampled versions of the input data:
-\begin{equation}
-\mathbf{X}^{(s)} = \text{Downsample}(\mathbf{X}, s)
-\end{equation}
-
-Each scale has its own encoder-decoder pair:
-\begin{align}
-\mathbf{z}_t^{(s)} &= f_{\text{enc}}^{(s)}(\mathbf{x}_t^{(s)}) \\
-\hat{\mathbf{x}}_t^{(s)} &= f_{\text{dec}}^{(s)}(\mathbf{z}_t^{(s)})
-\end{align}
-
-The multi-scale loss combines reconstruction errors across all scales:
-\begin{equation}
-\mathcal{L}_{\text{MSAE}} = \sum_{s} \alpha_s \left[ \frac{1}{T_s} \sum_{t=1}^{T_s} \|\mathbf{x}_t^{(s)} - \hat{\mathbf{x}}_t^{(s)}\|_2^2 + \lambda_s \sum_{t=1}^{T_s} \|\mathbf{z}_t^{(s)}\|_1 \right]
-\end{equation}
-
-where $\alpha_s$ weights the contribution of each scale and $T_s$ is the number of time points at scale $s$.
-
-\subsubsection{Hyperparameter Selection}
-
-The choice of hyperparameters significantly affects the interpretability-reconstruction trade-off:
+\subsection{Model architecture}
 
 \begin{itemize}
-\item \textbf{Latent dimension ($d_{\text{sae}}$)}: We systematically vary the number of latent features and evaluate the resulting interpretability and reconstruction quality. Smaller dimensions promote interpretability but may limit representational capacity, while larger dimensions provide better reconstruction at the cost of feature clarity.
-
-\item \textbf{Sparsity constraint (top-k)}: We implement top-k sparsity, keeping only the k most active features at each time point. This ensures a controlled level of sparsity while allowing for flexible feature activation patterns across different neural states.
-
-\item \textbf{Scale weights ($\alpha_s$)}: The relative importance of different temporal scales is optimized based on downstream task performance and biological relevance of discovered features.
+    \item Usefulness of SDL methods in Mech interp.
+    
+    \item Variant of MSAE as variant of SAE.
+    \begin{itemize}
+        \item Briefly mention other archs tried: batchTopK winner for sparsity enforcement.
+    \end{itemize}
+    
+    \item In addition to MSAE levels width, briefly mention hyperparameters, expound in Appendix.
+    \begin{itemize}
+        \item topk per level, loss X per level, seq len for neural data, seq len for latent space used with transformer layer in decoder
+    \end{itemize}
+    
+    \item Show latex formulas for encoder, decoder, total loss.
 \end{itemize}
