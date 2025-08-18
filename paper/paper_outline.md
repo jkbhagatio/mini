@@ -94,15 +94,27 @@
 
 ---
 
-# Figures
+# Main figures
 
 0. Intro figure
     - Neural data -> explicit latent space vs. extracting interpretable latents
     - (Optional to include, but ideally yes, space permitting)
 
-1. Pipeline
+1. MINI Pipeline
 
 2. Our model arch: MSAE variant
+
+3. Synthetic dataset results
+
+4. Churchland dataset results
+
+5. Aeon dataset results
+
+---
+
+# Supplementary figures
+
+1. Allen dataset results
 
 ---
 
@@ -270,25 +282,24 @@
 
 - Method comparisons table details
 
+- Some methods to include:
 
----
-
-- SIMPL (George et al., 2025)
-- NCE (Schmutz et al., 2025)
-- MINT (Perkins et al., 2024)
-- SMC-LR-RNN (Pals et al., 2024)
-- MtM (Zhang et al. 2024)
-- MM-GP-VAE (Gondur et al., 2024)
-- DPAD (Sani et al. 2024)
-- sliceTCA (Pellegrino et al., 2024)
-- NDT2 (Ye et al., 2023)
-- iLQR-VAE (Schimel et al., 2022)
-- TNDM (Hurwitz et al., 2021)
-- Ctrl-TNDM (Kudryashova et al., 2023)
-- PLNDE (Kim et al., 2021)
-- M-GPL-VM (Jensen et al., 2020)
-- VIND (Hernandez et al., 2020)
-- MIND (Low et al., 2018)
-- pfLDS (Gao et al., 2016)
-- PLDS (Macke et al., 2011)
-- GPFA (Yu et al., 2009)
+    - SIMPL (George et al., 2025)
+    - NCE (Schmutz et al., 2025)
+    - MINT (Perkins et al., 2024)
+    - SMC-LR-RNN (Pals et al., 2024)
+    - MtM (Zhang et al. 2024)
+    - MM-GP-VAE (Gondur et al., 2024)
+    - DPAD (Sani et al. 2024)
+    - sliceTCA (Pellegrino et al., 2024)
+    - NDT2 (Ye et al., 2023)
+    - iLQR-VAE (Schimel et al., 2022)
+    - TNDM (Hurwitz et al., 2021)
+    - Ctrl-TNDM (Kudryashova et al., 2023)
+    - PLNDE (Kim et al., 2021)
+    - M-GPL-VM (Jensen et al., 2020)
+    - VIND (Hernandez et al., 2020)
+    - MIND (Low et al., 2018)
+    - pfLDS (Gao et al., 2016)
+    - PLDS (Macke et al., 2011)
+    - GPFA (Yu et al., 2009)
