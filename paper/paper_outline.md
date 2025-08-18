@@ -85,6 +85,20 @@
 
     - Training/Inference time
 
+---
+
+# Figures
+
+0. Intro figure
+    - Neural data -> explicit latent space vs. extracting interpretable latents
+    - (Optional to include, but ideally yes, space permitting)
+
+1. Pipeline
+
+2. Our model arch: MSAE variant
+
+---
+
 # Paper (main)
 
 ## Introduction
@@ -107,17 +121,15 @@
 
 (Spike sorter output -> feature extraction)
 
-- Neural data preprocessing
+- Data preprocessing
 
-- Training model
+- Model training
 
   - Hyperparameters and sweeps
 
-- Evaluating model
+- Model evaluation
 
-- Building dashboard for feature hunting
-
-- Evaluating features
+- Feature evaluation
 
 ### Model Architecture
 
@@ -127,7 +139,7 @@
 
 ## Results
 
-- Ref methods comparison table
+- Ref method comparisons table
 
 - Discrete and continuous, environmental and behavioral features
 - Same animal, cross-session: same features
@@ -209,6 +221,8 @@
     
     - Neural latents benchmark scores: compare with other methods
 
+---
+
 # Paper (supplementary)
 
 ## Acknowledgements
@@ -217,28 +231,24 @@
 
 ## Appendix
 
-### Data and code availability
+### Code and data availability
 
 - Model and feature viz details
+
+### Additional model details
 
 ### Additional results
 
 - Allen datasets
 
-### Method table comparison
+### Method comparisons
 
-#### Main text comparisons
+- Method comparisons table
 
-- LangevinFlow VAE (Song et al., 2025)
-- CEBRA (Schneider et al., 2023)
-- PCA
-- (sparse)NMF
-
-#### Methods table comparisons
+- Method comparisons table details
 
 
-
-#### Other methods to mention
+---
 
 - SIMPL (George et al., 2025)
 - NCE (Schmutz et al., 2025)
