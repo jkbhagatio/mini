@@ -175,7 +175,7 @@ We assessed the stability of discovered features across multiple training runs a
 
 \subsection{Methods Comparison Table}
 
-Here we highlight 15 features of neural LVM methods and create a table displaying how MINI and other relevant methods compare against these features. Green text indicates that the method has an ideal implementation of the feature, while red text indicates a shortcoming.
+Here we highlight 15 features of neural LVM methods and create a table displaying how MINI and other relevant methods compare against these features. Light-green text indicates that the method has an ideal implementation of the feature, while dark-red text indicates a shortcoming.
 
 These features are:
 \begin{itemize}
@@ -196,61 +196,9 @@ These features are:
     \item \textit{Requires significant hyperparameter tuning}: Whether the method requires significant hyperparameter tuning to learn interpretable latents.
 \end{itemize}
 
-\newcommand{\goodQual}[1]{\textcolor{cb_green}{#1}}
+\newcommand{\goodQual}[1]{\textcolor{green}{#1}}
 \newcommand{\badQual}[1]{\textcolor{cb_red}{#1}}
 \newcommand*\rot[1]{\rotatebox{90}{\parbox{3cm}{\centering\small #1}}}
-
-% \begin{table}[h]
-% \label{table:method_comparisons}
-% \centering
-% \begin{threeparttable}
-% \setlength{\tabcolsep}{2.5pt}
-% \renewcommand{\arraystretch}{1.6}
-% \begin{tabular}{>{\raggedright}m{5cm}|c|c|c|c|c|c|c|}
-% \toprule
-% \textbf{Feature} & \rot{\textbf{MINI}*} & \rot{PCA* \cite{hotelling_1933_pca}} & \rot{sparseNMF* \cite{hoyer_2004_sparsenmf}} & \rot{LangevinFlow* \cite{song_2025_langevinflow}} & \rot{CEBRA* \cite{schneider_2023_cebra}} & \rot{ST-NDT \cite{le_2022_stndt}} & \rot{AutoLFADS \cite{keshtkaran_2022_autolfads}} \\
-% \midrule
-% Requires multimodal data & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} \\
-% \hline
-% Requires trial-structured data & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No\textsuperscript{\textasciicircum}} \\
-% \hline
-% Supports multimodal data & \goodQual{Yes} & \badQual{No} & \badQual{No} & \badQual{No} & \goodQual{Yes} & \badQual{No} & \badQual{No} \\
-% \hline
-% Supports trial-structured data & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} \\
-% \hline
-% Learns sparse, easily identifiable latents & \goodQual{Yes} & \badQual{No} & \goodQual{Yes} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} \\
-% \hline
-% Learns hierarchical latents & \goodQual{Yes} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} \\
-% \hline
-% Learns temporally precise latents & \goodQual{Yes} & \badQual{No} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} \\
-% \hline
-% Learns a continuously-valued latent space & \badQual{No\textsuperscript{\dag}} & \goodQual{Yes} & \badQual{No\textsuperscript{\dag}} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} \\
-% \hline
-% Can use temporal dynamics to update the latent space & \goodQual{Yes} & \badQual{No} & \badQual{No} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} \\
-% \hline
-% Imposes a prior on the latent space & \goodQual{No} & \badQual{Yes} & \goodQual{No} & \badQual{Yes} & \goodQual{No} & \goodQual{No} & \badQual{Yes} \\
-% \hline
-% Uses nonlinear dynamics & \goodQual{Yes} & \badQual{No} & \badQual{No} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} \\
-% \hline
-% Can be used as a generative model & \goodQual{Yes} & \badQual{No} & \badQual{No} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} \\
-% \hline
-% Enforces neural data reconstruction & \badQual{Yes} & \goodQual{No} & \badQual{Yes} & \badQual{Yes} & \goodQual{No} & \badQual{Yes} & \badQual{Yes} \\
-% \hline
-% Has approximate linear time scaling & \goodQual{Yes\textsuperscript{\#}} & \goodQual{Yes} & \badQual{No} & \badQual{No} & \goodQual{Yes} & \badQual{No} & \badQual{No} \\
-% \hline
-% Requires significant hyperparameter tuning & \badQual{Yes} & \goodQual{No} & \badQual{Yes} & \badQual{Yes} & \badQual{Yes} & \badQual{Yes} & \badQual{Yes} \\
-% \bottomrule
-% \end{tabular}
-% \caption{\centering Comparison of MINI with other neural LVM methods.}
-% \begin{tablenotes}[flushleft]
-% \footnotesize
-% \item *: Method comparison visualized in the main text
-% \item \textsuperscript{\dag}: Enforced sparsity can cause step-like jumps in the data-to-latents mapping
-% \item \textsuperscript{\#}: In the standard implementation, without a transformer layer in the decoder
-% \item \textsuperscript{\textasciicircum}: Can bin data to create ``pseudo''-trials
-% \end{tablenotes}
-% \end{threeparttable}
-% \end{table}
 
 \begin{table}[h]
 \label{table:method_comparisons}
@@ -260,43 +208,43 @@ These features are:
 \renewcommand{\arraystretch}{1.6}
 \begin{tabular}{>{\raggedright}m{5cm}|c|c|c|c|c|c|c|c|c|c|}
 \toprule
-\textbf{Feature} & \rot{\textbf{MINI}*} & \rot{PCA* \cite{hotelling_1933_pca}} & \rot{ICA* \cite{comon_1994_ica}} & \rot{sparseNMF* \cite{hoyer_2004_sparsenmf}} & \rot{t-SNE \cite{vandermaaten_2008_tsne}} & \rot{UMAP \cite{mcinnes_2018_umap}} & \rot{LangevinFlow* \cite{song_2025_langevinflow}} & \rot{CEBRA* \cite{schneider_2023_cebra}} & \rot{ST-NDT \cite{le_2022_stndt}} & \rot{AutoLFADS \cite{keshtkaran_2022_autolfads}} \\
+\textbf{Feature} & \rot{\textbf{MINI}*} & \rot{LangevinFlow* \cite{song_2025_langevinflow}} & \rot{CEBRA* \cite{schneider_2023_cebra}} & \rot{ST-NDT \cite{le_2022_stndt}} & \rot{AutoLFADS \cite{keshtkaran_2022_autolfads}} & \rot{UMAP** \cite{mcinnes_2018_umap}} & \rot{t-SNE** \cite{vandermaaten_2008_tsne}} & \rot{sparseNMF** \cite{hoyer_2004_sparsenmf}} & \rot{ICA \cite{comon_1994_ica}} & \rot{PCA \cite{hotelling_1933_pca}} \\
 \midrule
 Requires multimodal data & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} \\
 \hline
-Requires trial-structured data & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No\textsuperscript{\textasciicircum}} \\
+Requires trial-structured data & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No\textsuperscript{\textasciicircum}} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \goodQual{No} \\
 \hline
-Supports multimodal data & \goodQual{Yes} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \goodQual{Yes} & \badQual{No} & \badQual{No} \\
+Supports multimodal data & \goodQual{Yes} & \badQual{No} & \goodQual{Yes} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} \\
 \hline
 Supports trial-structured data & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} \\
 \hline
-Learns sparse, easily identifiable latents & \goodQual{Yes} & \badQual{No} & \badQual{No} & \goodQual{Yes} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} \\
+Learns sparse, easily identifiable latents & \goodQual{Yes} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \goodQual{Yes} & \badQual{No} & \badQual{No} \\
 \hline
 Learns hierarchical latents & \goodQual{Yes} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} \\
 \hline
-Learns temporally precise latents & \goodQual{Yes} & \badQual{No} & \badQual{No} & \goodQual{Yes} & \badQual{No} & \badQual{No} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} \\
+Learns temporally precise latents & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \badQual{No} & \badQual{No} & \goodQual{Yes} & \badQual{No} & \badQual{No} \\
 \hline
-Learns a continuously-valued latent space & \badQual{No\textsuperscript{\dag}} & \goodQual{Yes} & \goodQual{Yes} & \badQual{No\textsuperscript{\dag}} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} \\
+Learns a continuously-valued latent space & \badQual{No\textsuperscript{\dag}} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \badQual{No\textsuperscript{\dag}} & \goodQual{Yes} & \goodQual{Yes} \\
 \hline
-Can use temporal dynamics to update the latent space & \goodQual{Yes} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} \\
+Can use temporal dynamics to update the latent space & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} \\
 \hline
-Imposes a prior on the latent space & \goodQual{No} & \badQual{Yes} & \badQual{Yes} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \badQual{Yes} & \goodQual{No} & \goodQual{No} & \badQual{Yes} \\
+Imposes a prior on the latent space & \goodQual{No} & \badQual{Yes} & \goodQual{No} & \goodQual{No} & \badQual{Yes} & \goodQual{No} & \goodQual{No} & \goodQual{No} & \badQual{Yes} & \badQual{Yes} \\
 \hline
-Uses nonlinear dynamics & \goodQual{Yes} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} \\
+Uses nonlinear dynamics & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} \\
 \hline
-Can be used as a generative model & \goodQual{Yes} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} \\
+Can be used as a generative model & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \goodQual{Yes} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} & \badQual{No} \\
 \hline
-Enforces neural data reconstruction & \badQual{Yes} & \goodQual{No} & \goodQual{No} & \badQual{Yes} & \goodQual{No} & \goodQual{No} & \badQual{Yes} & \goodQual{No} & \badQual{Yes} & \badQual{Yes} \\
+Enforces neural data reconstruction & \badQual{Yes} & \badQual{Yes} & \goodQual{No} & \badQual{Yes} & \badQual{Yes} & \goodQual{No} & \goodQual{No} & \badQual{Yes} & \goodQual{No} & \goodQual{No} \\
 \hline
-Has approximate linear time scaling & \goodQual{Yes\textsuperscript{\#}} & \goodQual{Yes} & \goodQual{Yes} & \badQual{No} & \badQual{No} & \goodQual{Yes} & \badQual{No} & \goodQual{Yes} & \badQual{No} & \badQual{No} \\
+Has approximate linear time scaling & \goodQual{Yes\textsuperscript{\#}} & \badQual{No} & \goodQual{Yes} & \badQual{No} & \badQual{No} & \goodQual{Yes} & \badQual{No} & \badQual{No} & \goodQual{Yes} & \goodQual{Yes} \\
 \hline
-Requires significant hyperparameter tuning & \badQual{Yes} & \goodQual{No} & \goodQual{No} & \badQual{Yes} & \badQual{Yes} & \badQual{Yes} & \badQual{Yes} & \badQual{Yes} & \badQual{Yes} & \badQual{Yes} \\
+Requires significant hyperparameter tuning & \badQual{Yes} & \badQual{Yes} & \badQual{Yes} & \badQual{Yes} & \badQual{Yes} & \badQual{Yes} & \badQual{Yes} & \badQual{Yes} & \goodQual{No} & \goodQual{No} \\
 \bottomrule
 \end{tabular}
 \caption{\centering Comparison of MINI with other neural LVM methods.}
 \begin{tablenotes}[flushleft]
 \footnotesize
-\item *: Method comparison visualized in the main text
+\item *: Latent comparison visualized in ~\ref{section:results}
 \item \textsuperscript{\dag}: Enforced sparsity can cause step-like jumps in the data-to-latents mapping
 \item \textsuperscript{\#}: In the standard implementation, without a transformer layer in the decoder
 \item \textsuperscript{\textasciicircum}: Can bin data to create ``pseudo''-trials
