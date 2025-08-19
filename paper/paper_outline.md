@@ -175,7 +175,9 @@
 
         - High pos velocity point1, high neg velocity point1, high pos velocity point2, high neg velocity point2, pos1, pos2, pos3, pos4
 
-        - Mapping of each of these features to individual latents
+        - Mapping of each of these features to indiv
+     
+        - .idual latents
 
         - Decoding position and velocity from latents alone
 
