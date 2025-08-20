@@ -9,7 +9,7 @@ wandb/
 data/
 slurm_logs/
 trained_saes/
-paper/full_paper.blg
 paper/full_paper.log
 paper/full_paper.pdf
-paper/full_paper.synctex.gz
+*.synctex.gz
+*.blg
