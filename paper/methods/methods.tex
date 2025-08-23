@@ -12,33 +12,33 @@
 
 MINI takes in high-dimensional neural data and outputs interpretable latents. The semi-automated pipeline consists of four steps (\autoref{fig:mini_pipeline}), the first three of which can be fully automated.
 
-In step 1, data processing is performed to prepare the neural data for model training. MINI contains code to take the output from common spikesorters (e.g. kilosort ~\cite{pachitariu_2016_kilosort}), bin it into a 2D matrix of time X space (e.g. timebins, units (putative neurons)), and normalize the data (e.g. max normalize or z-score normalize across space (e.g. units) or time (e.g. timebins)). Users can also manually bin and process their neural data before proceeding to step 2.
+In step 1, data processing is performed to prepare the neural data for model training. MINI contains code to take the output from common spikesorters (e.g. Kilosort ~\cite{pachitariu_2016_kilosort}), bin it into a 2D matrix of time X space (e.g. timebins, units (putative neurons)), and normalize the data (e.g. max normalize or z-score normalize across space (e.g. units) or time (e.g. timebins)). Users can also manually bin and process their neural data before proceeding to step 2.
 
 - A similar approach could be applied to output from common calcium imaging processing tools (e.g. Suite2p ~\cite{pachitariu_2017_suite2p}).
 
-In step 2, a SDNN model is trained on the processed neural data. This model reconstructs the data from sparsely active dictionary elements (neurons in the model's hiden layer), with the goal of having these elements correspond to natural features encoded by the neural activity, thereby producing readily interpretable latents.
+In step 2, a SDNN model is trained on the processed neural data. This model reconstructs the data from sparsely active dictionary elements, with the goal of having these elements correspond to natural features encoded by the neural activity, thereby producing readily interpretable latents (\autoref{fig:sdnn_arch} \textbf{a}, \textbf{b}). For example, when a model is trained on neural activity from visual cortex, an element may correspond to a particular property of a stimulus in the visual field, and similarly, when a model is trained on neural activity from the motor cortex, an element may correspond to a particular quality of movement. 
 
-Can be run with sweeps or not. 
+The model can be configured as an autoencoder, transcoder, or crosscoder ~\cite{lindsey_2024_crosscoders}, depending on whether the to-be-reconstructed target neural activity is the same as (e.g. we are trying to reconstruct V2 activity with the same 21 activity as input), dependent on (e.g. we are trying to reconstruct V2 activity with V1 activity as input), or otherwise related to (e.g. we are trying to reconstruct V2 activity from subject1 based on V2 activity from subject2 from a given timepoint in a given task to see if they have shared representations) the input neural activity, respectively.
 
-This step includes hyperparameter optimization, which can be done via grid search or other methods. 
+MINI employs a novel variant of the Matryoshka SDNN architecture ~\cite{bussman_2025_msae} to segment the latent space into multiple hierarchical levels, with each level attempting a full reconstruction of the target neural activity (\autoref{fig:sdnn_arch} \textbf{c}). ... Mention topk. ...
 
-Variant of MSAE as SAE. 
+- The novely comes from a transformer decoder layer...
 
-Transformer decoder layer. 
+- Show latex formulas for encoder, decoder, total loss.
 
-Show latex formulas for encoder, decoder, total loss.
+- Model training can be set to run with a sweep, after which multiple models are evaluated in the subsequent pipeline step. The common model hyperparameters to sweep over are n_levels, dsae_levels, topk, and latent space sequence length. Depending on the optimizer used, it's recommended to additionally sweep over hyperparameters such as learning rate (we use Adam by default bc...)
 
 (For additional details on model architecture and training, see \nameref{subsection:additional_pipeline_details}.)
 
 \begin{figure}[h]
-    \begin{minipage}{0.64\linewidth}
+    \begin{minipage}{0.63\linewidth}
     \includegraphics[width=\linewidth]{figures/sdnn_arch.pdf}
     \end{minipage}%
-    \begin{minipage}{0.35\linewidth}
+    \begin{minipage}{0.37\linewidth}
     \caption{
         \textbf{Model motivation} \\
         \small
-        (\textbf{a}) Natural, "real-world" features $x$ get encoded by neural activity $y$. At this timepoint, three active features are simultaneously represented by the joint activity of three neurons. (\textbf{b}) A neural network reconstructs neural activity $z$ based on $y$ via sparse dictionary elements $d$. When training is successful, $d$ corresponds to $x$: sparse dictionary elements represent natural features. If $z$ tries to recreate $y$ exactly ($\hat{y}$), the model is an autoencoder; in other scenarios (e.g. $z$ is separate but dependent on or related to $y$) it is a transcoder or crosscoder. (\textbf{c}) A Matryoshka spare dictionary neural network segments the latent space into multiple levels, each of which attempts to do a full reconstruction of the target neural activity. In this case, latents exclusive to the highest-level will often correspond to high-level features (e.g. a round object), while latents exclusive to the lowest-level will often correspond to low-level features (e.g. a basketball).
+        (\textbf{a}) Natural, "real-world" features $x$ are encoded by neural activity $y$. In this example, three active features are simultaneously represented by the joint activity of three neurons. (\textbf{b}) A SDNN reconstructs neural activity $z$ based on $y$ via sparse dictionary elements $d$. When training is successful, $d$ corresponds to $x$: sparse dictionary elements (i.e. model neurons) represent natural features. If $z$ tries to recreate $y$ exactly ($\hat{y}$), the model is an autoencoder; in other scenarios (e.g. $z$ is separate but dependent on or related to $y$) it is a transcoder or crosscoder. (\textbf{c}) A Matryoshka spare dictionary neural network segments the latent space into multiple levels, each of which attempts to do a full reconstruction of the target neural activity. Latents in the highest-level will often correspond to high-level features (e.g. a round object), while latents exclusive to the lowest-level will often correspond to low-level features (e.g. a basketball).
     }
     \label{fig:sdnn_arch}
     \end{minipage}
