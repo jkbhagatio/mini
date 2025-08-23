@@ -549,3 +549,5 @@ def eval_model(
     # </ss>
 
 # </s>
+
+# <s> Options for transformer layer in latent space
