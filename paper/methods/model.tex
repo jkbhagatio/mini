@@ -4,10 +4,10 @@
     \begin{minipage}{0.66\linewidth}
     \includegraphics[width=\linewidth]{figures/sdnn_arch.pdf}
     \end{minipage}%
-    \begin{minipage}{0.35\linewidth}
+    \begin{minipage}{0.34\linewidth}
     \caption{
         \textbf{MINI's sparse dictionary neural network architecture.} \\
-        \small (\textbf{a}) Natural features $x$ get encoded by neural activity $y$. (\textbf{b}) A sparse dictionary neural network attempts to recreate neural activity $\hat{y}$ from $y$. If $\hat{y}$ tries to recreate $y$ exactly, then the model is an autoencoder, while in other situations it may be a transcoder or crosscoder. ()\textbf{c}) A Matryoshka spare dictionary neural network segments the latent space into multiple levels, each of which attempts to do a full reconstruction of the target neural activity. In this case, latents exclusive to the highest-level will often correspond to high-level features (e.g. a round object), while latents exclusive to the lowest-level will often correspond to low-level features (e.g. a basketball).
+        \small (\textbf{a}) Natural ("real-world") features $x$ get encoded by neural activity $y$. At this timepoint, three active features are simultaneously represented by the joint activity of three neurons (\textbf{b}). A neural network reconstructs neural activity $\hat{y}$ from $y$ via sparse dictionary elements $d$. When training is successful, $d$ corresponds to $x$: sparse dictionary elements represent natural features. If $\hat{y}$ tries to recreate $y$ exactly, the model is an autoencoder; in other scenarios (e.g. $\hat{y}$ is separate but dependent on or related to $y$) it is a transcoder or crosscoder. ()\textbf{c}) A Matryoshka spare dictionary neural network segments the latent space into multiple levels, each of which attempts to do a full reconstruction of the target neural activity. In this case, latents exclusive to the highest-level will often correspond to high-level features (e.g. a round object), while latents exclusive to the lowest-level will often correspond to low-level features (e.g. a basketball).
     }
     \label{fig:sdnn_arch}
     \end{minipage}
