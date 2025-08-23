@@ -10,11 +10,23 @@
     \label{fig:mini_pipeline}
 \end{figure}
 
-MINI takes in high-dimensional neural data and outputs interpretable features of this data. The semi-automated pipeline consists of four steps (\autoref{fig:mini_pipeline}), the first three of which can be fully automated.
+MINI takes in high-dimensional neural data and outputs interpretable latents. The semi-automated pipeline consists of four steps (\autoref{fig:mini_pipeline}), the first three of which can be fully automated.
 
-In step 1, data processing is performed to prepare the neural data for model training. MINI contains code to take the output from common spikesorters (e.g. kilosort ~\cite{pachitariu_2016_kilosort}), bin it into a 2D matrix of time X space (e.g. timebins, units (putative neurons)), and normalize the data (e.g. max normalize or z-score normalize across space (e.g. units) or time (e.g. timebins)). Users can also manually bin and process their data before proceeding to step 2.
+In step 1, data processing is performed to prepare the neural data for model training. MINI contains code to take the output from common spikesorters (e.g. kilosort ~\cite{pachitariu_2016_kilosort}), bin it into a 2D matrix of time X space (e.g. timebins, units (putative neurons)), and normalize the data (e.g. max normalize or z-score normalize across space (e.g. units) or time (e.g. timebins)). Users can also manually bin and process their neural data before proceeding to step 2.
 
-In step 2, a SDNN is trained on the processed neural data. Can be run with sweeps or not. This step includes hyperparameter optimization, which can be done via grid search or other methods. Variant of MSAE as SAE. Transformer decoder layer. Show latex formulas for encoder, decoder, total loss.
+- A similar approach could be applied to output from common calcium imaging processing tools (e.g. Suite2p ~\cite{pachitariu_2017_suite2p}).
+
+In step 2, a SDNN model is trained on the processed neural data. This model reconstructs the data from sparsely active dictionary elements (neurons in the model's hiden layer), with the goal of having these elements correspond to natural features encoded by the neural activity, thereby producing readily interpretable latents.
+
+Can be run with sweeps or not. 
+
+This step includes hyperparameter optimization, which can be done via grid search or other methods. 
+
+Variant of MSAE as SAE. 
+
+Transformer decoder layer. 
+
+Show latex formulas for encoder, decoder, total loss.
 
 (For additional details on model architecture and training, see \nameref{subsection:additional_pipeline_details}.)
 
