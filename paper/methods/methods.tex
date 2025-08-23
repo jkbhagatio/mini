@@ -10,6 +10,14 @@
     \label{fig:mini_pipeline}
 \end{figure}
 
+MINI takes in high-dimensional neural data and outputs interpretable features of this data. The semi-automated pipeline consists of four steps (\autoref{fig:mini_pipeline}), the first three of which can be fully automated.
+
+In step 1, data processing is performed to prepare the neural data for model training. MINI contains code to take the output from common spikesorters (e.g. kilosort ~\cite{pachitariu_2016_kilosort}), bin it into a 2D matrix of time X space (e.g. timebins, units (putative neurons)), and normalize the data (e.g. max normalize or z-score normalize across space (e.g. units) or time (e.g. timebins)). Users can also manually bin and process their data before proceeding to step 2.
+
+In step 2, a SDNN is trained on the processed neural data. Can be run with sweeps or not. This step includes hyperparameter optimization, which can be done via grid search or other methods. Variant of MSAE as SAE. Transformer decoder layer. Show latex formulas for encoder, decoder, total loss.
+
+(For additional details on model architecture and training, see \nameref{subsection:additional_pipeline_details}.)
+
 \begin{figure}[h]
     \begin{minipage}{0.64\linewidth}
     \includegraphics[width=\linewidth]{figures/sdnn_arch.pdf}
@@ -18,23 +26,25 @@
     \caption{
         \textbf{Model motivation} \\
         \small
-        (\textbf{a}) Natural ("real-world") features $x$ get encoded by neural activity $y$. At this timepoint, three active features are simultaneously represented by the joint activity of three neurons. (\textbf{b}) A neural network reconstructs neural activity $z$ from $y$ via sparse dictionary elements $d$. When training is successful, $d$ corresponds to $x$: sparse dictionary elements represent natural features. If $z$ tries to recreate $y$ exactly ($\hat{y}$), the model is an autoencoder; in other scenarios (e.g. $z$ is separate but dependent on or related to $y$) it is a transcoder or crosscoder. (\textbf{c}) A Matryoshka spare dictionary neural network segments the latent space into multiple levels, each of which attempts to do a full reconstruction of the target neural activity. In this case, latents exclusive to the highest-level will often correspond to high-level features (e.g. a round object), while latents exclusive to the lowest-level will often correspond to low-level features (e.g. a basketball).
+        (\textbf{a}) Natural, "real-world" features $x$ get encoded by neural activity $y$. At this timepoint, three active features are simultaneously represented by the joint activity of three neurons. (\textbf{b}) A neural network reconstructs neural activity $z$ based on $y$ via sparse dictionary elements $d$. When training is successful, $d$ corresponds to $x$: sparse dictionary elements represent natural features. If $z$ tries to recreate $y$ exactly ($\hat{y}$), the model is an autoencoder; in other scenarios (e.g. $z$ is separate but dependent on or related to $y$) it is a transcoder or crosscoder. (\textbf{c}) A Matryoshka spare dictionary neural network segments the latent space into multiple levels, each of which attempts to do a full reconstruction of the target neural activity. In this case, latents exclusive to the highest-level will often correspond to high-level features (e.g. a round object), while latents exclusive to the lowest-level will often correspond to low-level features (e.g. a basketball).
     }
     \label{fig:sdnn_arch}
     \end{minipage}
 \end{figure}
 
-MINI takes in high-dimensional neural data and outputs interpretable features of this data. The semi-automated pipeline consists of four steps (\autoref{fig:mini_pipeline}), the first three of which can be fully automated.
+In step 3, the trained model is evaluated using a variety of metrics to assess its performance. (SAEBench) If the model does not meet the desired criteria, it can be re-trained with different hyperparameters. 
 
-In step 1, data processing is performed to prepare the neural data for model training. MINI contains code to take the output from common spikesorters (e.g. kilosort ~\cite{pachitariu_2016_kilosort}), bin it into a 2D matrix of time X space (e.g. timebins, units (putative neurons)), and normalize the data (e.g. max normalize or z-score normalize across space (e.g. units) or time (e.g. timebins)). Users can also manually bin and process their data before proceeding to step 2.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{figures/model_eval.pdf}
+    \caption{
+        \textbf{Model evaluation metrics.} \\
+        \small By default, trained models are evaluated via the following metrics: latent L0 (left), and R\textsuperscript{2} (middle) and cosine similarity (right) of reconstruction-to-actual neural activity for each temporal ("Examples") and spatial ("Units") bin. ... Additional features, such as the R\textsuperscript{2}of overall neural data reconstruction for each individual latent, can be specifed and included.
+    }
+    \label{fig:model_eval}
+\end{figure}
 
-In step 2, a SDNN is trained on the processed neural data. This step includes hyperparameter optimization, which can be done via grid search or other methods. Variant of MSAE as SAE. Transformer decoder layer. Show latex formulas for encoder, decoder, total loss.
-
-In step 3, the trained model is evaluated using a variety of metrics to assess its performance. If the model does not meet the desired criteria, it can be re-trained with different hyperparameters. 
-
-Finally, in step 4, the latents produced by the model are evaluated for interpretability as features. This includes visualizing their activation patterns over time and experimental conditions, as well as assessing their decoding performance. The user can then export these features for further analysis.
-
-Example usage of the pipeline on multiple distinct datasets can be found in notebooks mentioned in \nameref{subsection:software_data_availability}.
+Finally, in step 4, the latents produced by the model are evaluated for interpretability as features. This includes visualizing their activation patterns over time and experimental conditions, as well as assessing their decoding performance. We detail typical approaches to feature evaluation in \nameref{section:results}.
 
 - For a user, the full, semi-automated pipeline is as follows:
 \begin{enumerate}
@@ -78,6 +88,4 @@ Example usage of the pipeline on multiple distinct datasets can be found in note
     \end{itemize}
 \end{enumerate}
 
-For additional detail on the pipeline, see \nameref{subsection:additional_pipeline_details}.
 
-For additional detail on model architecture, see \nameref{subsection:additional_model_details}.
