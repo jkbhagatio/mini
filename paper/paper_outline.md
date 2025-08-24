@@ -248,9 +248,11 @@
 
 - Hyperparameter selection
 
+- Full loss calc (including aux loss)
+
 - See [./notes.md](./notes.md)
 
-### Additional training details
+### Additional pipeline details
 
 - Hyperparameter selection
 
