@@ -20,12 +20,12 @@ The pipeline's first stage prepares neural data for model training. MINI include
 
 In stage 2, a SDNN model is trained to reconstruct the processed neural data from latent, sparsely active dictionary elements -- the model's hidden layer neurons\footnote{In a SDNN model: model neuron = dictionary element = latent}. The end goal is for these latents to represent disentangled, interpretable representations\footnote{In our vernacular: interpretable latent $\approx$ feature $\approx$ representation} encoded by the neural activity (\autoref{fig:sdnn_arch}a,b). Sparsity encourages the model to discover a monosemantic dictionary, in which each latent corresponds to a single feature. For instance, a latent from a model trained on visual cortex activity may correspond to a particular property of a visual stimulus, while a latent from a model trained on motor cortex activity may correspond to a specific aspect of movement.
 
-The model can be configured as an autoencoder, transcoder, or crosscoder ~\cite{lindsey_2024_crosscoders}, depending on the relationship between the input and target neural data. As an autoencoder, the model reconstructs its own input; e.g. V1 activity based on V1 activity. As a transcoder, the model reconstructs a dependent target from a different input; e.g. V2 activity based on V1 activity. As a crosscoder, the model reconstructs a related target of a different input; e.g. V1 activity on day 2 based on V1 activity on day 1. In all cases, the model is trained to minimize the difference between the reconstructed and actual target neural data. The full training procedure is summarized in \autoref{algorithm:sdnn_model_training}. Three key components are particularly worth noting: the Matryoshka architecture, batch top-k sparsity, and optional integration over latent space history via self-attention.
+The model can be configured as an autoencoder, transcoder, or crosscoder ~\cite{lindsey_2024_crosscoders}, depending on the relationship between the input and target neural data. As an autoencoder, the model reconstructs its own input; e.g. V1 activity based on V1 activity. As a transcoder, the model reconstructs a dependent target from a different input; e.g. V2 activity based on V1 activity. As a crosscoder, the model reconstructs a related target of a different input; e.g. V1 activity on day 2 based on V1 activity on day 1. In all cases, the model is trained to minimize the difference between the reconstructed and actual target neural data. The full training procedure is summarized in \nameref{algorithm:sdnn_model_training}. Three key components are particularly worth noting: the Matryoshka architecture, batch top-k sparsity, and optional integration over latent space history via self-attention.
 
 ...
 
 \begin{algorithm}[h!]
-\caption{MINI Training Procedure}
+\caption{Model training procedure}
 \label{algorithm:sdnn_model_training}
 \begin{algorithmic}[1]
 \State \textbf{Data definitions:}
