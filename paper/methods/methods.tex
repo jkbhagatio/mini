@@ -50,7 +50,7 @@ The model can be configured as an autoencoder, transcoder, or crosscoder ~\cite{
     \State $\mathcal{L}_{\text{recon}} \gets 0$
     \For{$l=1$ to $L$} \Comment{For each level...}
         \State $\hat{\mathbf{A}}_l \gets S_{\text{topk}}(\mathbf{A}_{:, :D_l})$ \Comment{Sparsify latents with batch top-$k$}
-        \State $\hat{\mathbf{Z}}_l \gets \text{ReLU}(\hat{\mathbf{A}}_l \mathbf{W}_{\text{dec}, :, :D_l}^T + \mathbf{b}_{\text{dec}})$ \Comment{Reconstruct target}
+        \State $\hat{\mathbf{Z}}_l \gets \text{ReLU}(\hat{\mathbf{A}}_l \mathbf{W}_{\text{dec}, :, :D_l}^T + \mathbf{b}_{\text{dec}})$ \Comment{Reconstruct target (decoder activations)}
         \State $\mathcal{L}_{\text{recon}} \gets \mathcal{L}_{\text{recon}} + \lambda_l \cdot \text{MSLE}(\mathbf{Z}, \hat{\mathbf{Z}}_l)$ \Comment{Get reconstruction loss}
     \EndFor
     
@@ -74,7 +74,7 @@ The model can be configured as an autoencoder, transcoder, or crosscoder ~\cite{
 \end{algorithm}
 
 \paragraph{Matryoshka Architecture.}
-As shown in Algorithm \ref{algorithm:sdnn_model_training}, we train the model to reconstruct target activity from multiple, nested dictionaries simultaneously. This Matryoshka structure \cite{bussmann_2025_msae} encourages the discovery of a multi-scale feature representation. Because each dictionary level $D_l$ is responsible for a full reconstruction, smaller dictionaries learn coarse, high-variance features, while larger ones learn progressively finer-grained features that explain the remaining variance.
+MINI employs a novel variant of the Matryoshka SDNN architecture ~\cite{bussmann_2025_msae} to segment the latent space into multiple hierarchical levels, with each level attempting a full reconstruction of the target neural activity (\autoref{fig:sdnn_arch} \textbf{c}). This allows for multi-scale feature representation at a single point in time. e.g. we can have neural representations for a round object, a ball, and most specifically, a basketball, when we see one. With other approaches, we are more likely to see "feature absorption", where we cannot distinguish to features that have neural representations if one is a subset of the other.
 
 \paragraph{Batch Top-$k$ Sparsity.}
 Sparsity is enforced using a batch top-$k$ operator, $S_{\text{topk}}(\cdot)$, which preserves only the $k \cdot B$ features with the highest activation magnitude across a batch of size $B$. This approach directly controls feature sparsity without introducing a tunable regularization coefficient (e.g., for an L1 penalty). Furthermore, it permits the number of active features per individual sample to vary, a flexible property that aligns well with the variable complexity of neural states.
@@ -82,8 +82,9 @@ Sparsity is enforced using a batch top-$k$ operator, $S_{\text{topk}}(\cdot)$, w
 \paragraph{Temporal Integration with Self-Attention.}
 When input data is provided as a sequence ($S>1$), an optional self-attention layer integrates information across the feature activation dimension (supplementary fig). This mechanism allows the model to learn features corresponding to temporal dynamics and state transitions, moving beyond representations of purely instantaneous neural patterns.
 
-\paragraph{Dead Feature Resurrection.}
-A common failure mode in training autoencoders is "feature death," where dictionary elements cease to activate for any input. We address this with an auxiliary loss designed to revive dead features. We monitor feature activation frequencies and identify a set of dead features $\mathcal{D}$. These features are then trained via an auxiliary MSE loss to reconstruct the residual error of the primary model ($\mathbf{x}_{\text{target}} - \hat{\mathbf{x}}_L$). The gradients from this auxiliary loss are exclusively applied to the parameters of the dead features, thereby encouraging them to learn useful representations without disrupting the training of active features.
+We find that the combination of the Matryoshka architecture, batch top-k sparsity, and latent space self-attention can empirically improve both reconstruction accuracy and feature interpretability (see \nameref{subsection:additional_pipeline_details}).
+
+Model training can be automated via hyperparameter sweeps to identify optimal configurations. We typically sweep over key parameters such as the number and size of Matryoshka levels (n\_levels, dsae\_levels), the sparsity coefficient (topk), and the latent space sequence length. Depending on the optimizer used, it's recommended to additionally sweep over hyperparameters such as learning rate (we use Adam by default bc...)
 
 \begin{figure}[htbp]
     \begin{minipage}{0.63\linewidth}
@@ -102,18 +103,6 @@ A common failure mode in training autoencoders is "feature death," where diction
 \hrule
 \hrule
 
-- MINI employs a novel variant of the Matryoshka SDNN architecture ~\cite{bussmann_2025_msae} to segment the latent space into multiple hierarchical levels, with each level attempting a full reconstruction of the target neural activity (\autoref{fig:sdnn_arch} \textbf{c}). This allows for multi-feature representation at a single point in time. e.g. we can have neural representations for a round object, a ball, and most specifically, a basketball, when we see one. With other approaches, we are more likely to see "feature absorption", where we cannot distinguish to features that have neural representations if one is a subset of the other.
-
-- Compared to a vanilla Matryoshka SDNN architecture, we've found empirically that in some cases batch topk and the addition of the transformer layer to the decoder improves reconstruction and interpretability (additional results).
-
-- Show latex formulas for encoder, decoder, total loss.
-
-- Model training can be set to run with a sweep, after which multiple models are evaluated in the subsequent pipeline step. The common model hyperparameters to sweep over are n\_levels, dsae\_levels, topk, and latent space sequence length. Depending on the optimizer used, it's recommended to additionally sweep over hyperparameters such as learning rate (we use Adam by default bc...)
-
-(For additional details on model architecture and training, see \nameref{subsection:additional_pipeline_details}.)
-
-\hrule
-\hrule
 In step 3, the trained model is evaluated using a variety of metrics to assess its performance. (SAEBench) If the model does not meet the desired criteria, it can be re-trained with different hyperparameters. 
 
 \begin{figure}[h]
@@ -127,6 +116,9 @@ In step 3, the trained model is evaluated using a variety of metrics to assess i
 \end{figure}
 
 Finally, in step 4, the latents produced by the model are evaluated for interpretability as features. This includes visualizing their activation patterns over time and experimental conditions, as well as assessing their decoding performance. We detail typical approaches to feature evaluation in \nameref{section:results}.
+
+\hrule
+\hrule
 
 - For a user, the full, semi-automated pipeline is as follows:
 \begin{enumerate}

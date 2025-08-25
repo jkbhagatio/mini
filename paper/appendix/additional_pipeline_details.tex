@@ -1,6 +1,25 @@
 \subsection{Additional pipeline details}
 \label{subsection:additional_pipeline_details}
 
+- Architecture variants details
+
+\begin{itemize}
+    
+    \item Variant of MSAE as variant of SAE.
+    \begin{itemize}
+        \item Briefly mention other archs tried: batchTopK winner for sparsity enforcement.
+    \end{itemize}
+    
+    \item In addition to MSAE levels width, briefly mention hyperparameters, expound in Appendix.
+    \begin{itemize}
+        \item topk per level, loss X per level, seq len for neural data, seq len for latent space used with transformer layer in decoder
+    \end{itemize}
+
+\end{itemize}
+
+\paragraph{Dead Feature Resurrection.}
+A common failure mode in training autoencoders is "feature death," where dictionary elements cease to activate for any input. We address this with an auxiliary loss designed to revive dead features. We monitor feature activation frequencies and identify a set of dead features $\mathcal{D}$. These features are then trained via an auxiliary MSE loss to reconstruct the residual error of the primary model ($\mathbf{x}_{\text{target}} - \hat{\mathbf{x}}_L$). The gradients from this auxiliary loss are exclusively applied to the parameters of the dead features, thereby encouraging them to learn useful representations without disrupting the training of active features.
+
 \begin{itemize}
     \item Training configuration and hyperparameters
     \begin{itemize}
