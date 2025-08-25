@@ -18,57 +18,63 @@ The pipeline's first stage prepares neural data for model training. MINI include
 
 \subsection{Model training}
 
-In stage 2, a SDNN model is trained to reconstruct the processed neural data from latent, sparsely active dictionary elements -- the model's hidden layer neurons\footnote{In a SDNN model: model neuron = dictionary element = latent}. The end goal is for these latents to represent disentangled, interpretable representations\footnote{In our vernacular: interpretable latent $\approx$ feature $\approx$ representation} encoded by the neural activity (\autoref{fig:sdnn_arch}\textbf{a},\textbf{b}). The sparsity encourages the model to discover a monosemantic dictionary, in which each latent corresponds to a single feature. For instance, a latent from a model trained on visual cortex activity may correspond to a particular property of a visual stimulus, while a latent from a model trained on motor cortex activity may correspond to a specific aspect of movement.
+In stage 2, a SDNN model is trained to reconstruct the processed neural data from latent, sparsely active dictionary elements -- the model's hidden layer neurons\footnote{In a SDNN model: model neuron = dictionary element = latent}. The end goal is for these latents to represent disentangled, interpretable representations\footnote{In our vernacular: interpretable latent $\approx$ feature $\approx$ representation} encoded by the neural activity (\autoref{fig:sdnn_arch}a,b). Sparsity encourages the model to discover a monosemantic dictionary, in which each latent corresponds to a single feature. For instance, a latent from a model trained on visual cortex activity may correspond to a particular property of a visual stimulus, while a latent from a model trained on motor cortex activity may correspond to a specific aspect of movement.
 
-The model can be configured as an autoencoder, transcoder, or crosscoder ~\cite{lindsey_2024_crosscoders}, depending on the relationship between the input and target neural data. As an autoencoder, the model reconstructs its own input; e.g. reconstructing V1 activity based on V1 activity. As a transcoder, the model reconstructs a dependent target from a different input; e.g. reconstructing V2 activity based on V1 activity. As a crosscoder, the model reconstructs a related target of a different input; e.g. reconstructing V1 activity on day 2 based on V1 activity on day 1. In all cases, the model is trained to minimize the difference between the reconstructed and actual target neural data. The training procedure is summarized here:
+The model can be configured as an autoencoder, transcoder, or crosscoder ~\cite{lindsey_2024_crosscoders}, depending on the relationship between the input and target neural data. As an autoencoder, the model reconstructs its own input; e.g. V1 activity based on V1 activity. As a transcoder, the model reconstructs a dependent target from a different input; e.g. V2 activity based on V1 activity. As a crosscoder, the model reconstructs a related target of a different input; e.g. V1 activity on day 2 based on V1 activity on day 1. In all cases, the model is trained to minimize the difference between the reconstructed and actual target neural data. The full training procedure is summarized in \autoref{algorithm:sdnn_model_training}. Three key components are particularly worth noting: the Matryoshka architecture, batch top-k sparsity, and optional integration over latent space history via self-attention.
+
+...
 
 \begin{algorithm}[h!]
 \caption{MINI Training Procedure}
-\label{alg:mini_training}
+\label{algorithm:sdnn_model_training}
 \begin{algorithmic}[1]
-\State \textbf{Define Inputs:}
-\State \quad Input neural data: $\mathbf{X}_{\text{in}} \in \mathbb{R}^{B \times S \times N_{\text{in}}}$ (Batch, Sequence, Input Neurons)
-\State \quad Target neural data: $\mathbf{X}_{\text{target}} \in \mathbb{R}^{B \times S \times N_{\text{out}}}$ (Batch, Sequence, Output Neurons)
-\State \textbf{Define Model Parameters} $\theta$:
-\State \quad Encoder: $\mathbf{W}_{\text{enc}} \in \mathbb{R}^{D_{\text{max}} \times (S \cdot N_{\text{in}})}$, $\mathbf{b}_{\text{enc}} \in \mathbb{R}^{D_{\text{max}}}$
-\State \quad Decoder: $\mathbf{W}_{\text{dec}} \in \mathbb{R}^{(S \cdot N_{\text{out}}) \times D_{\text{max}}}$, $\mathbf{b}_{\text{dec}} \in \mathbb{R}^{S \cdot N_{\text{out}}}$
-\State \quad Self-Attention (optional): $\theta_{\text{attn}}$
-\State \textbf{Define Hyperparameters:}
-\State \quad Matryoshka levels $\{D_l\}_{l=1}^L$, Reconstruction loss weights $\{\lambda_l\}_{l=1}^L$, Auxiliary loss weight $\gamma$
-\Procedure{TrainStep}{$\mathbf{x}_{\text{in}}, \mathbf{x}_{\text{target}}$}
-    \State $\mathbf{x}_{\text{in}} \gets \text{Reshape}(\mathbf{x}_{\text{in}}, [B, S \cdot N_{\text{in}}])$
-    \State $\mathbf{x}_{\text{target}} \gets \text{Reshape}(\mathbf{x}_{\text{target}}, [B, S \cdot N_{\text{out}}])$
-    
+\State \textbf{Data definitions:}
+\State \quad Input neural data: $\mathbf{Y} \in \mathbb{R}^{B \times S_{\text{in}} \times N_{\text{in}}}$ \textsuperscript{(Batch, Sequence length of input data, Input neural units)}
+\State \quad Target neural data: $\mathbf{Z} \in \mathbb{R}^{B \times S_{\text{out}} \times N_{\text{out}}}$ \textsuperscript{(Batch, Sequence length of output data, Output neural units)}
+\State \textbf{Model definitions:}
+\State \quad Encoder: $\mathbf{W}_{\text{enc}} \in \mathbb{R}^{D_{\text{max}} \times S_{\text{in}} \times N_{\text{in}}}$, $\mathbf{b}_{\text{enc}} \in \mathbb{R}^{D_{\text{max}}}$ \textsuperscript{(Hidden layer neurons)}
+\State \quad Decoder: $\mathbf{W}_{\text{dec}} \in \mathbb{R}^{S_{\text{out}} \times N_{\text{out}} \times D_{\text{max}}}$, $\mathbf{b}_{\text{dec}} \in \mathbb{R}^{S_{\text{out}} \times N_{\text{out}}}$
+\State \quad Transformer block (optional) $\mathbf{\theta_{t}}$: $\{\mathbf{W}_{Q,K,V} \in \mathbb{R}^{D_{\max} \times D_{\max}}, \dots\}$
+\State \quad Matryoshka levels: $\mathbf{\{D_l\}_{l=1}^L}$
+\State \quad Weights each level's reconstruction loss (optional): $\mathbf{\{\lambda_l\}_{l=1}^L}$
+\State \quad Auxiliary loss weight: $\mathbf{\gamma}$
+\\
+\Procedure{train\_step}{$\mathbf{Y}, \mathbf{Z}$}    
     \Statex \Comment{\textit{--- Forward Pass ---}}
-    \State $\mathbf{A} \gets \text{ReLU}(\mathbf{x}_{\text{in}}\mathbf{W}_{\text{enc}}^T + \mathbf{b}_{\text{enc}})$ \Comment{Encoder Activations}
+    \State $\mathbf{A} \gets \text{ReLU}(\mathbf{Y}\mathbf{W}_{\text{enc}}^T + \mathbf{b}_{\text{enc}})$ \Comment{Get encoder activations}
+    \\
     \If{$S > 1$}
-        \State $\mathbf{A} \gets \text{SelfAttention}(\mathbf{A}; \theta_{\text{attn}})$ \Comment{Temporal Integration}
+        \State $\mathbf{A} \gets \text{SelfAttention}(\mathbf{A}; \theta_{\text{attn}})$ \Comment{Temporally integrate over latent space}
     \EndIf
-
+    \\
     \State $\mathcal{L}_{\text{recon}} \gets 0$
-    \For{$l=1$ to $L$} \Comment{Multi-level Reconstruction}
-        \State $\hat{\mathbf{A}}_l \gets S_{\text{topk}}(\mathbf{A}_{:, :D_l})$ \Comment{Batch Top-$k$ Sparsity}
-        \State $\hat{\mathbf{x}}_l \gets \text{ReLU}(\hat{\mathbf{A}}_l \mathbf{W}_{\text{dec}, :, :D_l}^T + \mathbf{b}_{\text{dec}})$ \Comment{Reconstruction}
-        \State $\mathcal{L}_{\text{recon}} \gets \mathcal{L}_{\text{recon}} + \lambda_l \cdot \text{MSE}(\mathbf{x}_{\text{target}}, \hat{\mathbf{x}}_l)$
+    \For{$l=1$ to $L$} \Comment{For each level...}
+        \State $\hat{\mathbf{A}}_l \gets S_{\text{topk}}(\mathbf{A}_{:, :D_l})$ \Comment{Sparsify latents with batch top-$k$}
+        \State $\hat{\mathbf{Z}}_l \gets \text{ReLU}(\hat{\mathbf{A}}_l \mathbf{W}_{\text{dec}, :, :D_l}^T + \mathbf{b}_{\text{dec}})$ \Comment{Reconstruct target}
+        \State $\mathcal{L}_{\text{recon}} \gets \mathcal{L}_{\text{recon}} + \lambda_l \cdot \text{MSLE}(\mathbf{Z}, \hat{\mathbf{Z}}_l)$ \Comment{Get reconstruction loss}
     \EndFor
     
-    \Statex \Comment{\textit{--- Auxiliary Loss for Dead Feature Resurrection ---}}
-    \State $\mathcal{D} \gets \text{GetDeadFeatures}(\mathbf{A})$
-    \State $\mathbf{r} \gets \mathbf{x}_{\text{target}} - \hat{\mathbf{x}}_L$ \Comment{Reconstruction Residual}
-    \State $\hat{\mathbf{r}} \gets \text{ReLU}((\mathbf{A} \odot \mathcal{D}) \mathbf{W}_{\text{dec}}^T + \mathbf{b}_{\text{dec}})$ \Comment{Reconstruct residual from dead features}
-    \State $\mathcal{L}_{\text{aux}} \gets \text{MSE}(\mathbf{r}, \hat{\mathbf{r}})$
-    
-    \State $\mathcal{L}_{\text{total}} \gets \mathcal{L}_{\text{recon}} + \gamma \mathcal{L}_{\text{aux}}$
-    
+    \Statex \Comment{\textit{--- Auxiliary Loss for Dead Latent Resurrection ---}}
+    \State $\mathcal{D} \gets \text{GetDeadLatents}(\mathbf{A})$
+    \If{\text{any}($\mathcal{D}$)} \Comment{Only compute if dead latents exist}
+        \State $\mathbf{R} \gets \mathbf{Z} - \hat{\mathbf{Z}}_L$ \Comment{Get reconstruction residual}
+        \State $\hat{\mathbf{R}} \gets \text{ReLU}((\mathbf{A} \odot \mathcal{D}) \mathbf{W}_{\text{dec}}^T + \mathbf{b}_{\text{dec}})$ \Comment{Reconstruct residual from dead latents}
+        \State $\mathcal{L}_{\text{aux}} \gets \text{MSE}(\mathbf{R}, \hat{\mathbf{R}})$ \Comment{Get auxiliary loss}
+    \Else
+        \State $\mathcal{L}_{\text{aux}} \gets 0$
+    \EndIf
+    \\
+    \State $\mathcal{L}_{\text{total}} \gets \mathcal{L}_{\text{recon}} + \gamma \mathcal{L}_{\text{aux}}$ \Comment{Total loss: reconstruction + auxiliary}
+
     \Statex \Comment{\textit{--- Backward Pass \& Parameter Update ---}}
-    \State $\mathbf{g} \gets \nabla_{\theta} \mathcal{L}_{\text{total}}$ \Comment{Compute gradients, masking $\nabla\mathcal{L}_{\text{aux}}$ to dead features}
-    \State $\theta \gets \text{AdamUpdate}(\theta, \mathbf{g})$ \Comment{Update model parameters}
+    \State $\mathbf{g} \gets \nabla_{\theta} \mathcal{L}_{\text{total}}$ \Comment{Compute gradients, masking $\nabla\mathcal{L}_{\text{aux}}$ to dead latents}
+    \State $\theta \gets \text{Update}(\theta, \mathbf{g})$ \Comment{Update model parameters}
 \EndProcedure
 \end{algorithmic}
 \end{algorithm}
 
 \paragraph{Matryoshka Architecture.}
-As shown in Algorithm \ref{alg:mini_training}, we train the model to reconstruct target activity from multiple, nested dictionaries simultaneously. This Matryoshka structure \cite{bussmann_2025_msae} encourages the discovery of a multi-scale feature representation. Because each dictionary level $D_l$ is responsible for a full reconstruction, smaller dictionaries learn coarse, high-variance features, while larger ones learn progressively finer-grained features that explain the remaining variance.
+As shown in Algorithm \ref{algorithm:sdnn_model_training}, we train the model to reconstruct target activity from multiple, nested dictionaries simultaneously. This Matryoshka structure \cite{bussmann_2025_msae} encourages the discovery of a multi-scale feature representation. Because each dictionary level $D_l$ is responsible for a full reconstruction, smaller dictionaries learn coarse, high-variance features, while larger ones learn progressively finer-grained features that explain the remaining variance.
 
 \paragraph{Batch Top-$k$ Sparsity.}
 Sparsity is enforced using a batch top-$k$ operator, $S_{\text{topk}}(\cdot)$, which preserves only the $k \cdot B$ features with the highest activation magnitude across a batch of size $B$. This approach directly controls feature sparsity without introducing a tunable regularization coefficient (e.g., for an L1 penalty). Furthermore, it permits the number of active features per individual sample to vary, a flexible property that aligns well with the variable complexity of neural states.
@@ -106,6 +112,8 @@ A common failure mode in training autoencoders is "feature death," where diction
 
 (For additional details on model architecture and training, see \nameref{subsection:additional_pipeline_details}.)
 
+\hrule
+\hrule
 In step 3, the trained model is evaluated using a variety of metrics to assess its performance. (SAEBench) If the model does not meet the desired criteria, it can be re-trained with different hyperparameters. 
 
 \begin{figure}[h]
