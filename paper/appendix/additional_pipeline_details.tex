@@ -4,7 +4,7 @@
 \subsubsection{Model training details}
 \label{subsubsection:model_training_details}
 
-\begin{algorithm}[h!]
+\begin{algorithm}[bh]
 \caption{Model training procedure}
 \label{algorithm:sdnn_model_training}
 \begin{algorithmic}[1]
@@ -63,15 +63,11 @@ A common failure mode in training SDNNs is "latent death," where dictionary elem
 
 ...
 
-\paragraph{Matryoshka architecture}
-
-- Results with and without Matryoshka architecture.
+\paragraph{Matryoshka architecture}.
 
 ...
 
-\paragraph{Transformer block for temporal integration of latent space}
-
-- Results with and without transformer block.
+\paragraph{Transformer block for temporal integration of latent space}.
 
 ...
 
@@ -101,3 +97,12 @@ A common failure mode in training SDNNs is "latent death," where dictionary elem
 We systematically analyzed the effect of X on reconstruction quality and feature interpretability across all three datasets.
 
 - See ./notes.md
+
+\subsubsection{Hyperparameter sweeps}
+\label{subsubsection:hyperparameter_sweeps}
+
+ We typically sweep over key architectural parameters, including the number and size of Matryoshka levels, the batch top-$k$ sparsity coefficient, and the latent space sequence length for the self-attention layer. Additionally, we sweep over optimizer-specific hyperparameters. We use the Adam optimizer by default due to its robust performance across a wide range of deep learning tasks, and typically include its learning rate in the sweep.
+
+ While hyperparameter sweeps are an empirical science, we typically choose these heuristics for setting sweep ranges:
+
+ ...
