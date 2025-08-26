@@ -1,13 +1,13 @@
 \section{Methods: The MINI pipeline}
 
 \begin{figure}[h]
-    \label{figure:mini_pipeline}
     \centering
     \includegraphics[width=\linewidth]{figures/mini_pipeline.pdf}
     \caption{
         \textbf{The MINI pipeline.} \\
         \small The MINI pipeline is comprised of 4 stages: 1) Spatiotemporal binning and processing of neural data; 2) Model training; 3) Model evaluation; 4) Latent evaluation for feature interpretability. Steps 1-3 can be either semi- or fully-automated.
     }
+    \label{figure:mini_pipeline}
 \end{figure}
 
 The MINI pipeline transforms high-dimensional neural data into a set of interpretable latents in four primary stages (\autoref{figure:mini_pipeline}), the first three of which can be fully automated.
@@ -20,74 +20,19 @@ The pipeline's first stage prepares neural data for model training. MINI include
 
 In stage 2, a SDNN model is trained to reconstruct the processed neural data from latent, sparsely active dictionary elements -- the model's hidden layer neurons\footnote{In a SDNN model: model neuron = dictionary element = latent}. The end goal is for these latents to represent disentangled, interpretable representations\footnote{In our vernacular: interpretable latent $\approx$ feature $\approx$ representation} encoded by the neural activity (\autoref{figure:sdnn_arch}a,b). Sparsity encourages the model to discover a monosemantic dictionary, in which each latent corresponds to a single feature. For instance, a latent from a model trained on visual cortex activity may correspond to a particular property of a visual stimulus, while a latent from a model trained on motor cortex activity may correspond to a specific aspect of movement.
 
-The model can be configured as an autoencoder, transcoder, or crosscoder ~\cite{lindsey_2024_crosscoders}, depending on the relationship between the input and target neural data. As an autoencoder, the model reconstructs its own input; e.g. V1 activity based on V1 activity. As a transcoder, the model reconstructs a dependent target from a different input; e.g. V2 activity based on V1 activity. As a crosscoder, the model reconstructs a related target of a different input; e.g. V1 activity on day 2 based on V1 activity on day 1. In all cases, the model is trained to minimize the difference between the reconstructed and actual target neural data. The full training procedure is summarized in \nameref{algorithm:sdnn_model_training}. Three key components are particularly worth noting: the Matryoshka architecture, batch top-k sparsity, and optional integration over latent space history via self-attention.
+The model can be configured in three ways ~\cite{lindsey_2024_crosscoders}, depending on the relationship between the input and target neural data:
+\begin{itemize}[nosep, leftmargin=1em, topsep=-0.5em]
+    \item \textbf{Autoencoder}: The model reconstructs its own input; e.g. V1 activity based on V1 activity.
+    \item \textbf{Transcoder}: The model reconstructs a dependent target of its input; e.g. V2 activity based on V1 activity.
+    \item \textbf{Crosscoder}: The model reconstructs a related target of its input; e.g. V1 activity on day 2 based on V1 activity on day 1.
+\end{itemize}
+In all cases, the model is trained to minimize the difference between the reconstructed and actual target neural data. The full training procedure is summarized in \nameref{algorithm:sdnn_model_training}. Three key components are particularly worth noting: the batch top-$k$ sparsity, Matryoshka architecture, and optional integration over latent space history via self-attention.
 
-...
+A batch top-$k$ operator preserves only the $k \cdot B$ latents with the highest activation magnitudes across a batch of size $B$. This approach directly controls sparsity without a tunable regularization coefficient (e.g., an L1 penalty) and flexibly permits the number of active features to vary per sample in the batch, aligning with the variable complexity of neural states. A novel variant of the Matryoshka SDNN architecture ~\cite{bussmann_2025_msae} segments the latent space into hierarchical levels, where each level attempts a full reconstruction of the target neural activity (\autoref{figure:sdnn_arch}c). This allows for multi-scale feature representation at single timepoints, and mitigates "feature absorption," a common issue where general features subsume specific ones ~\cite{chanin_2024_feature_absorption}. For example, our model can learn that a "drifting grating" is a subset of the more general "grating" visual stimulus class without sacrificing the representation of either (\nameref{subsubsection:allen_dataset_results}). Lastly, if input data is provided as a sequence of timebins rather than single timebins, an optional transformer block can integrate information over the latent space history via self-attention, enabling the model to learn features corresponding to evolving temporal dynamics, rather than just instantaneous neural patterns. We find that in some cases the combination of these three components empirically improves both reconstruction accuracy and feature interpretability (see \nameref{subsubsection:architecture_details}).
 
-\begin{algorithm}[h!]
-\caption{Model training procedure}
-\label{algorithm:sdnn_model_training}
-\begin{algorithmic}[1]
-\State \textbf{Data definitions:}
-\State \quad Input neural data: $\mathbf{Y} \in \mathbb{R}^{B \times S_{\text{in}} \times N_{\text{in}}}$ \textsuperscript{(Batch, Sequence length of input data, Input neural units)}
-\State \quad Target neural data: $\mathbf{Z} \in \mathbb{R}^{B \times S_{\text{out}} \times N_{\text{out}}}$ \textsuperscript{(Batch, Sequence length of output data, Output neural units)}
-\State \textbf{Model definitions:}
-\State \quad Encoder: $\mathbf{W}_{\text{enc}} \in \mathbb{R}^{D_{\text{max}} \times S_{\text{in}} \times N_{\text{in}}}$, $\mathbf{b}_{\text{enc}} \in \mathbb{R}^{D_{\text{max}}}$ \textsuperscript{(Hidden layer neurons)}
-\State \quad Decoder: $\mathbf{W}_{\text{dec}} \in \mathbb{R}^{S_{\text{out}} \times N_{\text{out}} \times D_{\text{max}}}$, $\mathbf{b}_{\text{dec}} \in \mathbb{R}^{S_{\text{out}} \times N_{\text{out}}}$
-\State \quad Transformer block (optional) $\mathbf{\theta_{t}}$: $\{\mathbf{W}_{Q,K,V} \in \mathbb{R}^{D_{\max} \times D_{\max}}, \dots\}$
-\State \quad Matryoshka levels: $\mathbf{\{D_l\}_{l=1}^L}$
-\State \quad Weights each level's reconstruction loss (optional): $\mathbf{\{\lambda_l\}_{l=1}^L}$
-\State \quad Auxiliary loss weight: $\mathbf{\gamma}$
-\\
-\Procedure{train\_step}{$\mathbf{Y}, \mathbf{Z}$}    
-    \Statex \Comment{\textit{--- Forward Pass ---}}
-    \State $\mathbf{A} \gets \text{ReLU}(\mathbf{Y}\mathbf{W}_{\text{enc}}^T + \mathbf{b}_{\text{enc}})$ \Comment{Get encoder activations}
-    \\
-    \If{$S > 1$}
-        \State $\mathbf{A} \gets \text{SelfAttention}(\mathbf{A}; \theta_{\text{attn}})$ \Comment{Temporally integrate over latent space}
-    \EndIf
-    \\
-    \State $\mathcal{L}_{\text{recon}} \gets 0$
-    \For{$l=1$ to $L$} \Comment{For each level...}
-        \State $\hat{\mathbf{A}}_l \gets S_{\text{topk}}(\mathbf{A}_{:, :D_l})$ \Comment{Sparsify latents with batch top-$k$}
-        \State $\hat{\mathbf{Z}}_l \gets \text{ReLU}(\hat{\mathbf{A}}_l \mathbf{W}_{\text{dec}, :, :D_l}^T + \mathbf{b}_{\text{dec}})$ \Comment{Reconstruct target (decoder activations)}
-        \State $\mathcal{L}_{\text{recon}} \gets \mathcal{L}_{\text{recon}} + \lambda_l \cdot \text{MSLE}(\mathbf{Z}, \hat{\mathbf{Z}}_l)$ \Comment{Get reconstruction loss}
-    \EndFor
-    
-    \Statex \Comment{\textit{--- Auxiliary Loss for Dead Latent Resurrection ---}}
-    \State $\mathcal{D} \gets \text{GetDeadLatents}(\mathbf{A})$
-    \If{\text{any}($\mathcal{D}$)} \Comment{Only compute if dead latents exist}
-        \State $\mathbf{R} \gets \mathbf{Z} - \hat{\mathbf{Z}}_L$ \Comment{Get reconstruction residual}
-        \State $\hat{\mathbf{R}} \gets \text{ReLU}((\mathbf{A} \odot \mathcal{D}) \mathbf{W}_{\text{dec}}^T + \mathbf{b}_{\text{dec}})$ \Comment{Reconstruct residual from dead latents}
-        \State $\mathcal{L}_{\text{aux}} \gets \text{MSE}(\mathbf{R}, \hat{\mathbf{R}})$ \Comment{Get auxiliary loss}
-    \Else
-        \State $\mathcal{L}_{\text{aux}} \gets 0$
-    \EndIf
-    \\
-    \State $\mathcal{L}_{\text{total}} \gets \mathcal{L}_{\text{recon}} + \gamma \mathcal{L}_{\text{aux}}$ \Comment{Total loss: reconstruction + auxiliary}
-
-    \Statex \Comment{\textit{--- Backward Pass \& Parameter Update ---}}
-    \State $\mathbf{g} \gets \nabla_{\theta} \mathcal{L}_{\text{total}}$ \Comment{Compute gradients, masking $\nabla\mathcal{L}_{\text{aux}}$ to dead latents}
-    \State $\theta \gets \text{Update}(\theta, \mathbf{g})$ \Comment{Update model parameters}
-\EndProcedure
-\end{algorithmic}
-\end{algorithm}
-
-\paragraph{Matryoshka Architecture.}
-MINI employs a novel variant of the Matryoshka SDNN architecture ~\cite{bussmann_2025_msae} to segment the latent space into multiple hierarchical levels, with each level attempting a full reconstruction of the target neural activity (\autoref{figure:sdnn_arch} \textbf{c}). This allows for multi-scale feature representation at a single point in time. e.g. we can have neural representations for a round object, a ball, and most specifically, a basketball, when we see one. With other approaches, we are more likely to see "feature absorption", where we cannot distinguish to features that have neural representations if one is a subset of the other.
-
-\paragraph{Batch Top-$k$ Sparsity.}
-Sparsity is enforced using a batch top-$k$ operator, $S_{\text{topk}}(\cdot)$, which preserves only the $k \cdot B$ features with the highest activation magnitude across a batch of size $B$. This approach directly controls feature sparsity without introducing a tunable regularization coefficient (e.g., for an L1 penalty). Furthermore, it permits the number of active features per individual sample to vary, a flexible property that aligns well with the variable complexity of neural states.
-
-\paragraph{Temporal Integration with Self-Attention.}
-When input data is provided as a sequence ($S>1$), an optional self-attention layer integrates information across the feature activation dimension (supplementary fig). This mechanism allows the model to learn features corresponding to temporal dynamics and state transitions, moving beyond representations of purely instantaneous neural patterns.
-
-We find that the combination of the Matryoshka architecture, batch top-k sparsity, and latent space self-attention can empirically improve both reconstruction accuracy and feature interpretability (see \nameref{subsection:additional_pipeline_details}).
-
-Model training can be automated via hyperparameter sweeps to identify optimal configurations. We typically sweep over key parameters such as the number and size of Matryoshka levels (n\_levels, dsae\_levels), the sparsity coefficient (topk), and the latent space sequence length. Depending on the optimizer used, it's recommended to additionally sweep over hyperparameters such as learning rate (we use Adam by default bc...)
+Model training can be fully automated via a hyperparameter sweep configuration to train an optimal model over one or multiple local or distributed cpus or gpus. We typically sweep over key parameters such as the number and size of Matryoshka levels (n\_levels, dsae\_levels), the sparsity coefficient (topk), and the latent space sequence length. Depending on the optimizer used, it's recommended to additionally sweep over hyperparameters such as learning rate (we use Adam by default bc...)
 
 \begin{figure}[htbp]
-    \label{figure:sdnn_arch}
     \begin{minipage}{0.63\linewidth}
     \includegraphics[width=\linewidth]{figures/sdnn_arch.pdf}
     \end{minipage}%
@@ -95,8 +40,9 @@ Model training can be automated via hyperparameter sweeps to identify optimal co
     \caption{
         \textbf{Model motivation} \\
         \small
-        (\textbf{a}) Natural, "real-world" features $x$ are encoded by neural activity $y$. In this example, three active features are simultaneously represented by the joint activity of three neurons. (\textbf{b}) A SDNN reconstructs neural activity $z$ based on $y$ via sparse dictionary elements $d$. When training is successful, $d$ corresponds to $x$: sparse dictionary elements (i.e. model neurons) represent natural features. If $z$ tries to recreate $y$ exactly ($\hat{y}$), the model is an autoencoder; in other scenarios (e.g. $z$ is separate but dependent on or related to $y$) it is a transcoder or crosscoder. (\textbf{c}) A Matryoshka spare dictionary neural network segments the latent space into multiple levels, each of which attempts to do a full reconstruction of the target neural activity. The black boxes indicate the latents involved in a single level, while the light red boxes indicate the additional latents used at lower-levels. Additionally, for each level here we illustrate imposing a topk of 1 for each level, where only 1 latent (the most active) is chosen for reconstruction at each level. Latents in the highest-level will often correspond to high-level features (e.g. a round object), while latents exclusive to the lowest-level will often correspond to low-level features (e.g. a basketball).
+        (\textbf{a}) Natural, "real-world" features $x$ are encoded by neural activity $y$. In this example, three active features are simultaneously represented by the joint activity of three neurons. (\textbf{b}) A SDNN reconstructs neural activity $z$ based on $y$ via sparse dictionary elements $d$. When training is successful, $d$ corresponds to $x$: sparse dictionary elements (i.e. model neurons) represent natural features. If $z$ tries to recreate $y$ exactly ($\hat{y}$), the model is an autoencoder; in other scenarios (e.g. $z$ is separate but dependent on or related to $y$) it is a transcoder or crosscoder. (\textbf{c}) A Matryoshka SDNN segments the latent space into multiple levels, each of which attempts to do a full reconstruction of the target neural activity. The black boxes indicate the latents involved in a single level, while the light-red boxes indicate the additional latents used at lower-levels. A $k = 1$ value is chosen for top-$k$ selection of the total possible additional latents to recruit for reconstruction at each level (the yellow neuron within each light-red box). Latents in the highest-level ($L_1$) will often correspond to high-level features (e.g. a round object), while latents exclusive to the lowest-level ($L_3$) will often correspond to low-level features (e.g. a basketball).
     }
+    \label{figure:sdnn_arch}
     \end{minipage}
 \end{figure}
 
@@ -104,16 +50,16 @@ Model training can be automated via hyperparameter sweeps to identify optimal co
 ...
 \hrule
 
-In step 3, the trained model is evaluated using a variety of metrics to assess its performance. (SAEBench) If the model does not meet the desired criteria, it can be re-trained with different hyperparameters. 
+In step 3, the trained model is evaluated using a variety of metrics to assess its performance. (SAEBench ~\cite{karvonen_2025_saebench}) If the model does not meet the desired criteria, it can be re-trained with different hyperparameters.
 
 \begin{figure}[h]
-    \label{figure:model_eval}
     \centering
     \includegraphics[width=\linewidth]{figures/model_eval.pdf}
     \caption{
         \textbf{Model evaluation metrics.} \\
         \small By default, trained models are evaluated via the following metrics: latent L0 (left), and R\textsuperscript{2} (middle) and cosine similarity (right) of reconstruction-to-actual neural activity for each temporal ("Examples") and spatial ("Units") bin. ... Additional features, such as the R\textsuperscript{2}of overall neural data reconstruction for each individual latent, can be specifed and included.
     }
+    \label{figure:model_eval}
 \end{figure}
 
 Finally, in step 4, the latents produced by the model are evaluated for interpretability as features. This includes visualizing their activation patterns over time and experimental conditions, as well as assessing their decoding performance. We detail typical approaches to feature evaluation in \nameref{section:results}.
