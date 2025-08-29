@@ -15,6 +15,17 @@
 
 \end{itemize}
 
+\subsection{On interpretable latents}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{figures/interpretable_latents_vs_latent_space.pdf}
+    \caption{
+        \textbf{Interpretable latents in a complex latent space.} \\
+        \small This toy example highlights the utility of MINI. The two rows show two different variables (top: discrete; bottom: continuous), each uniquely encoded by the same underlying neural activity made up of three neurons' firing rates. The viridis colorbar shows the variables' values as a function of this neural activity. (\textbf{a}) Each point in the scatterplots represents a moment in time. (\textbf{b}) A projection of this activity into a 2D latent space creates tangled trajectories where variable states (e.g. 'on' and 'off' in the discrete case, and 'high' and 'low' in the continuous case) are not easily distnguished. The start and end points of the trajectories are marked by white and black dots, respectively, while arrows indicate trajectory direction. (\textbf{c}) In contrast to the tangled latent space, MINI finds individual latents corresponding to each variable, demonstrating the potential for improved interpretability of neural representations.
+    }
+    \label{figure:interpretable_latents_vs_latent_space}
+\end{figure}
+
 \input{appendix/additional_pipeline_details}
 
 \input{appendix/additional_dataset_info}

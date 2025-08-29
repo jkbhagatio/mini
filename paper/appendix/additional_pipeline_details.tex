@@ -9,11 +9,11 @@
 \label{algorithm:sdnn_model_training}
 \begin{algorithmic}[1]
 \State \textbf{Data definitions:}
-\State \quad Input neural data: $\mathbf{Y} \in \mathbb{R}^{B \times S_{\text{in}} \times N_{\text{in}}}$ \textsuperscript{(Batch, Sequence length of input data, Input neural units)}
-\State \quad Target neural data: $\mathbf{Z} \in \mathbb{R}^{B \times S_{\text{out}} \times N_{\text{out}}}$ \textsuperscript{(Batch, Sequence length of output data, Output neural units)}
+\State \quad Input neural data: $\mathbf{Y} \in \mathbb{R}^{B \times S \times N_{\text{in}}}$ \textsuperscript{(Batch, Sequence length, Input neural units)}
+\State \quad Target neural data: $\mathbf{Z} \in \mathbb{R}^{B \times \times N_{\text{out}}}$ \textsuperscript{(Batch, Output neural units)}
 \State \textbf{Model definitions:}
-\State \quad Encoder: $\mathbf{W}_{\text{enc}} \in \mathbb{R}^{D_{\text{max}} \times S_{\text{in}} \times N_{\text{in}}}$, $\mathbf{b}_{\text{enc}} \in \mathbb{R}^{D_{\text{max}}}$ \textsuperscript{(Hidden layer neurons)}
-\State \quad Decoder: $\mathbf{W}_{\text{dec}} \in \mathbb{R}^{S_{\text{out}} \times N_{\text{out}} \times D_{\text{max}}}$, $\mathbf{b}_{\text{dec}} \in \mathbb{R}^{S_{\text{out}} \times N_{\text{out}}}$
+\State \quad Encoder: $\mathbf{W}_{\text{enc}} \in \mathbb{R}^{D_{\text{max}} \times S \times N_{\text{in}}}$, $\mathbf{b}_{\text{enc}} \in \mathbb{R}^{D_{\text{max}}}$ \textsuperscript{(Hidden layer neurons)}
+\State \quad Decoder: $\mathbf{W}_{\text{dec}} \in \mathbb{R}^{N_{\text{out}} \times D_{\text{max}}}$, $\mathbf{b}_{\text{dec}} \in \mathbb{R}^{N_{\text{out}}}$
 \State \quad Transformer block (optional) $\mathbf{\theta_{t}}$: $\{\mathbf{W}_{Q,K,V} \in \mathbb{R}^{D_{\max} \times D_{\max}}, \dots\}$
 \State \quad Matryoshka levels: $\mathbf{\{D_l\}_{l=1}^L}$
 \State \quad Weights each level's reconstruction loss (optional): $\mathbf{\{\lambda_l\}_{l=1}^L}$
