@@ -34,6 +34,7 @@ torchvision = { version = "==0.20.1+cu121" }
 wandb = "*"
 cebra = "==0.4.0"
 temporaldata = "*"
+brainsets = "*"
 
 [tool.pixi.dependencies]
 datasets = { version = ">=2.14.6" }
