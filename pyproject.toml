@@ -1,5 +1,5 @@
 [project]
-name = "mini"
+name = "nldisco"
 authors = [{name = "jai", email = "jkbhagatio@gmail.com"}]
 description = "Mech Interp for Neural Interp"
 requires-python = "==3.9"
@@ -21,20 +21,21 @@ extra-index-urls = [
 ]
 
 [tool.pixi.pypi-dependencies]
-mini = { path = "." , editable = true }
+nldisco = { path = "." , editable = true }
 allensdk = { version = ">=2.16" }
+cebra = "==0.4.0"
+dandi = "*"  
+email-validator = "*" # required for dandi → dandischema → pydantic[email]
 jax = { version = ">=0.4.21" }
 pip = "*"
 sortedcontainers = "*"
+temporaldata = "*"
 torch = { version = "==2.5.1+cu121" }
 torcheval = "*"
 torchinfo = "*"
 torchtext = "*"
 torchvision = { version = "==0.20.1+cu121" }
 wandb = "*"
-cebra = "==0.4.0"
-temporaldata = "*"
-brainsets = "*"
 
 [tool.pixi.dependencies]
 datasets = { version = ">=2.14.6" }
@@ -62,6 +63,10 @@ ruff = "*"
 h5py = "*"
 
 [tool.pixi.tasks]
+postinstall = """
+    pip install brainsets &&
+    python -m ipykernel install --user
+"""
 
 [tool.ruff]
 line-length = 99

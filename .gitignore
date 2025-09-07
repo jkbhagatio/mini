@@ -8,4 +8,5 @@ __pycache__/
 wandb/
 data/
 slurm_logs/
-trained_saes/
+data/
+saved_sae_unit_activations_paper/
