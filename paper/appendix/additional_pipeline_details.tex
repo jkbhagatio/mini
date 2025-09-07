@@ -1,12 +1,12 @@
 \subsection{Additional pipeline details}
 \label{subsection:additional_pipeline_details}
 
-\subsubsection{Model training details}
+\subsubsection{Model training}
 \label{subsubsection:model_training_details}
 
 \begin{algorithm}[bh]
 \caption{Model training procedure}
-\label{algorithm:sdnn_model_training}
+\label{algorithm:sded_model_training}
 \begin{algorithmic}[1]
 \State \textbf{Data definitions:}
 \State \quad Input neural data: $\mathbf{Y} \in \mathbb{R}^{B \times S \times N_{\text{in}}}$ \textsuperscript{(Batch, Sequence length, Input neural units)}
@@ -53,13 +53,13 @@
 \end{algorithmic}
 \end{algorithm}
 
-Some notes on \nameref{algorithm:sdnn_model_training}:
+Some notes on \nameref{algorithm:sded_model_training}:
 
 \paragraph{Dead Latent Resurrection.}
-A common failure mode in training SDNNs is "latent death," where dictionary elements cease to activate for any input. We address this with an auxiliary loss designed to revive dead latents. We monitor feature activation frequencies and identify a set of dead latents $\mathcal{D}$. These latents are then trained via an auxiliary MSE loss to reconstruct the residual error of the primary model ($\mathbf{x}_{\text{target}} - \hat{\mathbf{x}}_L$). The gradients from this auxiliary loss are exclusively applied to the parameters of the dead latents, thereby encouraging them to learn useful representations without disrupting the training of active latents.
+A common failure mode in training SDEDs is "latent death," where dictionary elements cease to activate for any input. We address this with an auxiliary loss designed to revive dead latents. We monitor feature activation frequencies and identify a set of dead latents $\mathcal{D}$. These latents are then trained via an auxiliary MSE loss to reconstruct the residual error of the primary model ($\mathbf{x}_{\text{target}} - \hat{\mathbf{x}}_L$). The gradients from this auxiliary loss are exclusively applied to the parameters of the dead latents, thereby encouraging them to learn useful representations without disrupting the training of active latents.
 
-\subsubsection{Architecture details}
-\label{subsubsection:architecture_details}
+\subsubsection{Model architecture}
+\label{subsubsection:model_architecture_details}
 
 ...
 
@@ -97,6 +97,19 @@ A common failure mode in training SDNNs is "latent death," where dictionary elem
 We systematically analyzed the effect of X on reconstruction quality and feature interpretability across all three datasets.
 
 - See ./notes.md
+
+\subsubsection{Model evaluation}
+\label{subsubsection:model_evaluation_details}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{figures/model_eval.pdf}
+    \caption{
+        \textbf{Model evaluation metrics.} \\
+        \small By default, trained models are evaluated via the following metrics: latent L0 (left), and R\textsuperscript{2} (middle) and cosine similarity (right) of reconstruction-to-actual neural activity for each temporal ("Examples") and spatial ("Units") bin. ... Additional features, such as the R\textsuperscript{2}of overall neural data reconstruction for each individual latent, can be specifed and included.
+    }
+    \label{figure:model_eval}
+\end{figure}
 
 \subsubsection{Hyperparameter sweeps}
 \label{subsubsection:hyperparameter_sweeps}

@@ -197,7 +197,7 @@
   </defs>
   <g class="st9">
     <g class="st9">
-      <text class="st29" transform="translate(1000.38 56.37)"><tspan x="0" y="0">Matryoshka SDNN reconstruction</tspan></text>
+      <text class="st29" transform="translate(1000.38 56.37)"><tspan x="0" y="0">Matryoshka SDED reconstruction</tspan></text>
     </g>
   </g>
   <path class="st42" d="M221.64,119.48c86.39,0,86.39,95.99,172.79,95.99" marker-end=""/>
@@ -629,7 +629,7 @@
     </g>
   </g>
   <g class="st9">
-    <text class="st8" transform="translate(531.93 50.69)"><tspan x="0" y="0">SDNN reconstruction</tspan></text>
+    <text class="st8" transform="translate(531.93 50.69)"><tspan x="0" y="0">SDED reconstruction</tspan></text>
     <text class="st8" transform="translate(531.93 75.94)"><tspan x="0" y="0">of neural activity</tspan></text>
   </g>
   <g class="st9">
