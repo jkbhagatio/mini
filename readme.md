@@ -1,8 +1,8 @@
-# mini
+# NLDisco
 
 ---
 
-**m**echanistic **i**nterpretability for **n**eural **i**nterpretability
+**Ne**ural **L**atent **Disco**very pipeline
 
 ## Environment set-up
 
@@ -14,7 +14,7 @@ Prerequisites:
 
 - An installed version of [pixi](https://pixi.sh/latest/)
 
-In the root directory, just run `pixi install --manifest-path ./pyproject.toml` - this will create a conda env named 'mini'.
+In the root directory, just run `pixi install --manifest-path ./pyproject.toml` - this will create a conda env named 'nldisco'.
 
 ### Other
 
@@ -28,7 +28,7 @@ Given:
 
 - Behavioral and/or environmental (meta)data
 
-**mini** performs the following steps to find interpretable neural signatures that underlie behavioral and/or environmental features (referred to collectively as *natural* features)
+**NLDisco** performs the following steps to find interpretable neural signatures that underlie behavioral and/or environmental features (referred to collectively as *natural* features)
 
 1. Trains an MSAE to reconstruct the neural data
 
