@@ -37,7 +37,7 @@ if __name__ == "__main__":
     # <s> Extract data and config and set up sweep.
 
     # Parse command line arguments
-    parser = argparse.ArgumentParser(description="Run SAE training sweep with WandB")
+    parser = argparse.ArgumentParser(description="Run SED training sweep with WandB")
     parser.add_argument(
         "--spk-cts-file", required=True, type=str, help="Path to CSV file containing spike counts"
     )
@@ -74,7 +74,7 @@ if __name__ == "__main__":
         config_artifact = wandb.Artifact(
             "spike_counts_config",
             type="dataset",
-            description="Model configuration for SAE sweep"
+            description="Model configuration for SED sweep"
         )
         with config_artifact.new_file("config.json") as f:  # add config as file
             config_dict = {
@@ -121,22 +121,23 @@ if __name__ == "__main__":
             loss_fn = nt.mse
             tau = None
         
-        # Create the SAE cfg and run training and evaluation.
-        dsae_map = wandb.config.dsae_topk_level_map
-        dsae_map = {int(k): int(v) for k, v in dsae_map.items()}
+        # Create the SED cfg and run training and evaluation.
+        dsed_map = wandb.config.dsed_topk_level_map
+        dsed_map = {int(k): int(v) for k, v in dsed_map.items()}
 
-        sae_cfg = nt.SaeConfig(
-            n_input_ae=spk_cts.shape[1],
-            dsae_topk_level_map=dsae_map,
+        sed_cfg = nt.SedConfig(
+            n_input=spk_cts.shape[1],
+            dsed_topk_map=dsed_map,
+            dsed_loss_x_map=wandb.config.dsed_loss_x_map,
             seq_len=wandb.config.seq_len,
             n_instances=wandb.config.n_instances,
         )
-        sae = nt.Sae(sae_cfg).to(device)
+        sed = nt.Sed(sed_cfg).to(device)
         _data_log = nt.optimize(  # train model
             spk_cts=spk_cts,
-            sae=sae,
+            sed=sed,
             loss_fn=loss_fn,
-            optimizer=t.optim.Adam(sae.parameters(), lr=wandb.config.lr),
+            optimizer=t.optim.Adam(sed.parameters(), lr=wandb.config.lr),
             use_lr_sched=wandb.config.use_lr_sched,
             dead_neuron_window=dead_neuron_window,
             n_steps=n_steps,
@@ -146,7 +147,7 @@ if __name__ == "__main__":
             plot_l0=True,
             tau=tau
         )
-        nt.eval_model(spk_cts, sae, batch_sz=1024, log_wandb=True)  # evaluate model
+        nt.eval_model(spk_cts, sed, batch_sz=1024, log_wandb=True)  # evaluate model
         
         run_duration = time.time() - start_time
         wandb.log({"run_duration": run_duration})

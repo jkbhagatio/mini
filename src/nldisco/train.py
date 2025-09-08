@@ -24,66 +24,66 @@ from nldisco.util import vec_r2
 # <s> SAE class config
 
 @dataclass
-class SaeConfig:
+class SedConfig:
     """Config class to set some params for the batch-topk MSAE."""
-    n_input_ae: int  # number of inputs to the MSAE
-    dsae_topk_map: Dict[int, int]  # {d_sae: topk} pairing for the MSAE levels
-    dsae_loss_x_map: Dict[int, int]  # {d_sae: loss_x} pairing for the MSAE levels
+    n_input: int  # number of inputs to the MSAE
+    dsed_topk_map: Dict[int, int]  # {d_sed: topk} pairing for the MSAE levels
+    dsed_loss_x_map: Dict[int, int]  # {d_sed: loss_x} pairing for the MSAE levels
     seq_len: int = 1  # number of time bins in an input sequence
     n_instances: int = 2  # number of model instances to optimize in parallel
     dtype: t.dtype = bfloat16  # data type for the model and spike data
 
 
-class Sae(nn.Module):
-    """SAE model for learning sparse representations of binned spike counts."""
-    # Shapes of weights and biases for the encoder and decoder in the single-layer SAE.
-    W_enc: Float[Tensor, "inst d_sae (in_sae seq_len)"]
-    W_dec: Float[Tensor, "inst in_sae d_sae"]
-    b_enc: Float[Tensor, "inst d_sae"]
-    b_dec: Float[Tensor, "inst in_sae"]
+class Sed(nn.Module):
+    """SED model for learning sparse representations of binned spike counts."""
+    # Shapes of weights and biases for the encoder and decoder in the single-layer SED.
+    W_enc: Float[Tensor, "inst d_sed (in_sed seq_len)"]
+    W_dec: Float[Tensor, "inst in_sed d_sed"]
+    b_enc: Float[Tensor, "inst d_sed"]
+    b_dec: Float[Tensor, "inst in_sed"]
 
-    def __init__(self, cfg: SaeConfig):
+    def __init__(self, cfg: SedConfig):
         """Initializes model parameters."""
         super().__init__()
         self.cfg = cfg
-        in_dim = cfg.n_input_ae * cfg.seq_len  # expand input dim for sequences
-        d_levels = cfg.dsae_topk_map.keys()
-        d_sae = max(d_levels)
+        in_dim = cfg.n_input * cfg.seq_len  # expand input dim for sequences
+        d_levels = cfg.dsed_topk_map.keys()
+        d_sed = max(d_levels)
         dtype = cfg.dtype
 
         # Tied weights initialization to reduce dead neurons (https://arxiv.org/pdf/2406.04093).
-        self.W_enc = t.empty((cfg.n_instances, d_sae, in_dim), dtype=dtype)
+        self.W_enc = t.empty((cfg.n_instances, d_sed, in_dim), dtype=dtype)
         self.W_enc = nn.init.kaiming_normal_(self.W_enc, mode="fan_in", nonlinearity="relu")
         self.W_dec = rearrange(
-            self.W_enc[..., :cfg.n_input_ae], "inst d_sae in_sae -> inst in_sae d_sae"
+            self.W_enc[..., :cfg.n_input], "inst d_sed in_sed -> inst in_sed d_sed"
         ).clone()
         self.W_enc, self.W_dec = nn.Parameter(self.W_enc), nn.Parameter(self.W_dec)
         
-        self.b_enc = nn.Parameter(t.zeros((cfg.n_instances, d_sae), dtype=dtype))
-        self.b_dec = nn.Parameter(t.zeros((cfg.n_instances, cfg.n_input_ae), dtype=dtype))
+        self.b_enc = nn.Parameter(t.zeros((cfg.n_instances, d_sed), dtype=dtype))
+        self.b_dec = nn.Parameter(t.zeros((cfg.n_instances, cfg.n_input), dtype=dtype))
 
-    def forward(self, x: Float[Tensor, "batch inst seq in_sae"]) -> (
+    def forward(self, x: Float[Tensor, "batch inst seq in_sed"]) -> (
         Tuple[
             List[Float[Tensor, "batch inst d_level"]],  # reconstructions for each level
             List[Float[Tensor, "batch inst d_level"]],  # topk activations per level
-            Float[Tensor, "batch inst d_sae"]  # activations for all neurons
+            Float[Tensor, "batch inst d_sed"]  # activations for all neurons
         ]
     ):
-        """Computes loss as a function of SAE feature sparsity and spike_count reconstructions."""
+        """Computes loss as a function of SED feature sparsity and spike_count reconstructions."""
         # Compute encoder activations.
         batch_sz = x.shape[0]
-        x = rearrange(x, "batch inst seq in_sae -> batch inst (seq in_sae)")
-        acts_enc = einsum(x, self.W_enc, "batch inst in_dim, inst d_sae in_dim -> batch inst d_sae")
+        x = rearrange(x, "batch inst seq in_sed -> batch inst (seq in_sed)")
+        acts_enc = einsum(x, self.W_enc, "batch inst in_dim, inst d_sed in_dim -> batch inst d_sed")
         acts_enc += self.b_enc
         acts_enc = F.relu(acts_enc)
         
-        d_levels = sorted(self.cfg.dsae_topk_map.keys())
+        d_levels = sorted(self.cfg.dsed_topk_map.keys())
         recon_levels = []
         topk_acts_levels = []
         for d_l in d_levels:
             # Attempt reconstruction separately for each level in the group.
             level_acts = acts_enc[..., :d_l]
-            batch_topk = batch_sz * self.cfg.n_instances * self.cfg.dsae_topk_map[d_l]
+            batch_topk = batch_sz * self.cfg.n_instances * self.cfg.dsed_topk_map[d_l]
             feat_keep_vals, feat_keep_idxs = level_acts.ravel().topk(batch_topk)
             topk_acts = level_acts.ravel().zero_().scatter_(
                 0, feat_keep_idxs, feat_keep_vals
@@ -92,7 +92,7 @@ class Sae(nn.Module):
             # Compute reconstructed input.
             W_dec_slice = self.W_dec[..., :d_l]
             x_recon = einsum(
-                topk_acts, W_dec_slice, "batch inst d_l, inst in_sae d_l -> batch inst in_sae"
+                topk_acts, W_dec_slice, "batch inst d_l, inst in_sed d_l -> batch inst in_sed"
             )
             x_recon += self.b_dec
             x_recon = F.relu(x_recon)  # ensure reconstructed spikes are non-negative
@@ -136,11 +136,11 @@ def msle(
 
 
 def res_recon_loss(
-    x: Float[Tensor, "batch inst in_sae"],  # input
-    x_recon: Float[Tensor, "batch inst in_sae"],  # reconstruction
-    sae: Sae,  # SAE model
-    acts_enc: Float[Tensor, "batch inst d_sae"],  # activations
-    dead_features: Bool[Tensor, "inst d_sae"],  # mask of dead neurons
+    x: Float[Tensor, "batch inst in_sed"],  # input
+    x_recon: Float[Tensor, "batch inst in_sed"],  # reconstruction
+    sed: Sed,  # SED model
+    acts_enc: Float[Tensor, "batch inst d_sed"],  # activations
+    dead_features: Bool[Tensor, "inst d_sed"],  # mask of dead neurons
     loss_fn: callable,  # loss function to use for the auxiliary loss
     max_revive_frac: float = 0.1,  # max fraction of dead neurons used for residual reconstruction
     **loss_fn_kwargs: Optional[Dict],  # kwargs for the loss function
@@ -152,7 +152,7 @@ def res_recon_loss(
     if n_dead:  # if dead neurons, try to reconstruct the residual from topk dead
         topk_aux = min(n_dead, int(max_revive_frac * dead_features.shape[-1]))
         acts_dead = acts_enc * repeat(
-            dead_features, "inst d_sae -> batch inst d_sae", batch=x.shape[0]
+            dead_features, "inst d_sed -> batch inst d_sed", batch=x.shape[0]
         )
         feat_keep_vals, feat_keep_idxs = acts_dead.ravel().topk(topk_aux)
         topk_dead_acts = acts_dead.ravel().zero_().scatter_(
@@ -160,8 +160,8 @@ def res_recon_loss(
         ).view_as(acts_dead)
         res_recon = einsum(
             topk_dead_acts,
-            sae.W_dec,
-            "batch inst d_sae, inst in_sae d_sae -> batch inst in_sae"
+            sed.W_dec,
+            "batch inst d_sed, inst in_sed d_sed -> batch inst in_sed"
         )
         return loss_fn(res, res_recon, **loss_fn_kwargs)
 
@@ -198,7 +198,7 @@ def simple_cosine_lr_sched(step: int, n_steps: int, initial_lr: float, min_lr: f
 
 def optimize(
     spk_cts: Int[Tensor, "n_examples n_units"],
-    sae: Sae,
+    sed: Sed,
     loss_fn: callable,
     optimizer: t.optim.Optimizer,
     use_lr_sched: bool,
@@ -219,18 +219,18 @@ def optimize(
         "l0": {}
     }
     n_examples, _n_units = spk_cts.shape
-    n_inst = sae.cfg.n_instances
-    seq_len = sae.cfg.seq_len
+    n_inst = sed.cfg.n_instances
+    seq_len = sed.cfg.seq_len
     valid_starts = n_examples - seq_len + 1  # valid start indices for sequences
-    d_sae = max(sae.cfg.dsae_topk_map.keys())  # max number of features in the SAE
-    n_steps_features_inactive = t.zeros((n_inst, d_sae), dtype=int, device=device)
-    dead_features = t.zeros((n_inst, d_sae), dtype=bool, device=device)
+    d_sed = max(sed.cfg.dsed_topk_map.keys())  # max number of features in the SED
+    n_steps_features_inactive = t.zeros((n_inst, d_sed), dtype=int, device=device)
+    dead_features = t.zeros((n_inst, d_sed), dtype=bool, device=device)
 
     lr = optimizer.param_groups[0]["lr"]
     if use_lr_sched:
         min_lr = lr * 1e-2
 
-    pbar = tqdm(range(n_steps), desc="SAE batch training step")
+    pbar = tqdm(range(n_steps), desc="SED batch training step")
     for step in pbar:
 
         if use_lr_sched:
@@ -238,95 +238,88 @@ def optimize(
                 simple_cosine_lr_sched(step, n_steps, lr, min_lr)
             )
 
-        # Get batch of spike counts to feed into SAE.
-        start_idxs = t.randint(0, valid_starts, (batch_sz, sae.cfg.n_instances))
+        # Get batch of spike counts to feed into SED.
+        start_idxs = t.randint(0, valid_starts, (batch_sz, sed.cfg.n_instances))
         seq_idxs = start_idxs.unsqueeze(-1) + t.arange(seq_len)  # broadcast seq idxs to new dim
         spike_count_seqs = spk_cts[seq_idxs]  # [batch_sz, n_instances, seq_len, n_units]
         
         # Forward pass -- get reconstruction loss for each level:
         # take loss between reconstructions and last timebin (sequence) of true spike counts
         optimizer.zero_grad()
-        recon_levels, topk_acts_levels, acts_enc = sae(spike_count_seqs)  # forward
-        recon_loss = t.zeros((batch_sz, sae.cfg.n_instances), device=device)
-        loss_xs = list(dict(sorted(sae.cfg.dsae_loss_x_map.items())).values())  # sorted by d_sae
+        recon_levels, topk_acts_levels, acts_enc = sed(spike_count_seqs)  # forward
+        recon_loss = t.zeros((batch_sz, sed.cfg.n_instances), device=device)
+        loss_xs = list(dict(sorted(sed.cfg.dsed_loss_x_map.items())).values())  # sorted by d_sed
         for l in range(len(recon_levels)):
             recon_loss += (
                 loss_fn(spike_count_seqs[..., -1, :], recon_levels[l], **loss_fn_kwargs)
                 * loss_xs[l]
             )
-        recon_loss = reduce(recon_loss, "batch inst -> ", "mean")
-        
-        # Save these gradients before computing gradients for dead neurons for aux loss
-        recon_loss.backward(retain_graph=True)
-        grad_buffer = {
-            name: p.grad.clone() for name, p in sae.named_parameters() if p.grad is not None
-        }
-        
-        # Get auxiliary loss for dead neurons
-        if dead_features.any():
-            optimizer.zero_grad()
-            aux_loss = res_recon_loss(
+        # Auxiliary loss for dead neurons.
+        if dead_features.sum() > 0:
+            recon_loss += res_recon_loss(
                 x=spike_count_seqs[..., -1, :],
                 x_recon=recon_levels[-1],
-                sae=sae, 
+                sed=sed,
                 acts_enc=acts_enc,
                 dead_features=dead_features,
                 loss_fn=loss_fn,
                 **loss_fn_kwargs
             )
-            aux_loss = reduce(aux_loss, "batch inst -> ", "mean")
         
-            # Apply aux loss grads to dead neurons only (mask out active neurons)
-            aux_loss.backward()
-            for name, p in sae.named_parameters():
-                if p.grad is not None:
-                    if "W_enc" in name:
-                        p.grad *= dead_features.unsqueeze(2)  # broadcast to input dim
-                    elif "W_dec" in name:
-                        p.grad *= dead_features.unsqueeze(1)  # broadcast to output dim
-                    elif "b_enc" in name:  # don't need for 'b_dec': acts as global offset
-                        p.grad *= dead_features
-                
-                    p.grad += grad_buffer.get(name, 0)  # add in gradients from recon_loss backward
-            
-            else:  # restore recon_loss gradients
-                for name, p in sae.named_parameters():
-                    if p.grad is not None and name in grad_buffer:
-                        p.grad = grad_buffer[name]
-        
-        sae.norm_decoder()  # normalize decoder weights
+        loss = recon_loss.mean()
+        loss.backward()
+
+        # Log gradients.
+        if log_wandb and (step % log_freq == 0):
+            grad_log = {
+                name: p.grad.clone() for name, p in sed.named_parameters() if p.grad is not None
+            }
+            wandb.log({"grads": grad_log}, step=step)
+
         optimizer.step()
 
-        feat_active = reduce(
-            topk_acts_levels[-1], "batch inst d_sae -> inst d_sae", "sum"
-        ) > 0
-        n_steps_features_inactive[feat_active] = 0
-        n_steps_features_inactive[~feat_active] += 1
-        dead_features = n_steps_features_inactive > dead_neuron_window
+        # Update dead features mask.
+        if step % dead_neuron_window == 0:
+            # Update dead features mask.
+            n_steps_features_inactive += 1
+            for l in range(len(topk_acts_levels)):
+                n_steps_features_inactive[..., :len(topk_acts_levels[l])] *= (topk_acts_levels[l].sum(dim=0) == 0)
+            dead_features = (n_steps_features_inactive >= dead_neuron_window)
 
-        # Display progress bar, and append new values for plotting.
-        if step % log_freq == 0 or (step + 1 == n_steps):
-            # import ipdb; ipdb.set_trace()
-            l0 = reduce(topk_acts_levels[-1] > 0, "batch inst d_sae -> batch inst", "sum").float()
-            l0_mean, l0_std = l0.mean().item(), l0.std().item()
-            frac_dead = dead_features.float().mean().item()
-            pbar.set_postfix(loss=f"{recon_loss.item():.5f},  {l0_mean=}, {l0_std=}, {frac_dead=}")
-            data_log["l0"][step] = {"mean": l0_mean, "std": l0_std}
-            data_log["loss"][step] = recon_loss.item()
+        # Log data.
+        if log_wandb and (step % log_freq == 0):
+            # Log fraction of active features.
+            frac_active = {
+                f"frac_active/d_sed={d_l}": (topk_acts_levels[l].sum(dim=0) > 0).float().mean().item()
+                for l, d_l in enumerate(sorted(sed.cfg.dsed_topk_map.keys()))
+            }
+            data_log["frac_active"][step] = frac_active
+            wandb.log(frac_active, step=step)
 
-            if log_wandb:
-                wandb.log(
-                    {"loss": recon_loss.item(), "l0_mean": l0_mean, "l0_std": l0_std, "step": step}
-                )
-            
-                if dead_features.any():
-                    wandb.log({"frac_dead": frac_dead, "step": step})
-            
-                if plot_l0:
-                    alpha = 0.3 + (0.7 * step / n_steps)  # alpha from 0.3 to 1.0
-                    l0_history.append(
-                        {"step": step, "mean": l0_mean, "std": l0_std, "alpha": alpha}
-                    )
+            # Log loss.
+            loss_log = {"loss": loss.item()}
+            data_log["loss"][step] = loss_log
+            wandb.log(loss_log, step=step)
+
+            # Log L0 norm.
+            l0 = {
+                f"l0/d_sed={d_l}": (topk_acts_levels[l] > 0).sum(dim=-1).float().mean().item()
+                for l, d_l in enumerate(sorted(sed.cfg.dsed_topk_map.keys()))
+            }
+            data_log["l0"][step] = l0
+            wandb.log(l0, step=step)
+
+            # Log parameter norms.
+            param_norm_log = {
+                f"param_norm/{name}": p.norm().item() for name, p in sed.named_parameters()
+            }
+            wandb.log(param_norm_log, step=step)
+
+            # Log learning rate.
+            wandb.log({"lr": optimizer.param_groups[0]["lr"]}, step=step)
+
+        pbar.set_postfix(loss=loss.item())
+        sed.norm_decoder()  # normalize decoder weights
                     l0_fig = nplot.plot_l0_stats(l0_history)
                     wandb.log({"l0_std_vs_mean": l0_fig, "step": step})
 
@@ -335,7 +328,7 @@ def optimize(
 
 def eval_model(
     spk_cts: Int[Tensor, "n_examples n_units"],
-    sae: Sae,
+    sed: Sed,
     batch_sz: int = 1024,
     log_wandb: bool = False,
 ) -> Tuple[
@@ -359,11 +352,11 @@ def eval_model(
 
     """
     device = spk_cts.device
-    n_inst = sae.cfg.n_instances
+    n_inst = sed.cfg.n_instances
     n_units = spk_cts.shape[1]
     n_examples = spk_cts.shape[0]
-    valid_starts = n_examples - sae.cfg.seq_len + 1
-    d_sae = max(sae.cfg.dsae_topk_map.keys())
+    valid_starts = n_examples - sed.cfg.seq_len + 1
+    d_sed = max(sed.cfg.dsed_topk_map.keys())
     n_steps = valid_starts // batch_sz  # total number of examples
     n_recon_examples = n_steps * batch_sz
     
@@ -371,26 +364,26 @@ def eval_model(
 
     # Create placeholders to store metrics.
     l0 = t.zeros((n_recon_examples, n_inst), dtype=t.float32, device=device)
-    latent_activity_count = t.zeros((n_inst, d_sae), dtype=t.float32, device=device)
-    recon_spk_cts = t.empty((n_recon_examples, n_inst, n_units), dtype=sae.cfg.dtype, device=device)
-    r2_per_example = t.empty((n_recon_examples, n_inst), dtype=sae.cfg.dtype, device=device)
-    cos_sim_per_example = t.empty((n_recon_examples, n_inst), dtype=sae.cfg.dtype, device=device)
+    latent_activity_count = t.zeros((n_inst, d_sed), dtype=t.float32, device=device)
+    recon_spk_cts = t.empty((n_recon_examples, n_inst, n_units), dtype=sed.cfg.dtype, device=device)
+    r2_per_example = t.empty((n_recon_examples, n_inst), dtype=sed.cfg.dtype, device=device)
+    cos_sim_per_example = t.empty((n_recon_examples, n_inst), dtype=sed.cfg.dtype, device=device)
     topk_acts_4d = []  # stores (inst_idx, ex_idx, feat_idx, act_val) for each topk act
 
-    progress_bar = tqdm(range(n_steps), desc="SAE batch evaluation step")
+    progress_bar = tqdm(range(n_steps), desc="SED batch evaluation step")
     with t.no_grad():
         for step in progress_bar:  # loop over all examples
             # Get start index for each seq in batch, and then get the full seq indices.
             start_idxs = t.arange(step * batch_sz, (step + 1) * batch_sz)
             seq_idxs = repeat(start_idxs, "batch -> batch inst", inst=n_inst)
-            seq_idxs = seq_idxs.unsqueeze(-1) + t.arange(sae.cfg.seq_len)  # broadcast to seq dim
+            seq_idxs = seq_idxs.unsqueeze(-1) + t.arange(sed.cfg.seq_len)  # broadcast to seq dim
             spike_count_seqs = spk_cts[seq_idxs]  # [batch, inst, seq, unit]
-            # Forward pass through SAE.
-            recon_levels, topk_acts_levels, _acts_raw = sae(spike_count_seqs)
+            # Forward pass through SED.
+            recon_levels, topk_acts_levels, _acts_raw = sed(spike_count_seqs)
             nonzero_mask = (topk_acts_levels[-1] > 0)
-            cur_l0 = reduce(nonzero_mask.float(), "batch inst sae_feat -> batch inst", "sum")
+            cur_l0 = reduce(nonzero_mask.float(), "batch inst sed_feat -> batch inst", "sum")
             latent_activity_count += reduce(
-                nonzero_mask.float(), "batch inst sae_feat -> inst sae_feat", "sum"
+                nonzero_mask.float(), "batch inst sed_feat -> inst sed_feat", "sum"
             )
             # Store results.
             l0[start_idxs] = cur_l0
@@ -465,7 +458,7 @@ def eval_model(
         data = asnumpy(latent_activity_frac[i])
         ax_density.hist(
             data,
-            bins=d_sae // 5,
+            bins=d_sed // 5,
             alpha=0.6,
             weights=np.ones_like(data) / len(data),  # Normalize by total number of latents
         )
@@ -485,30 +478,30 @@ def eval_model(
     r2_per_example = asnumpy(r2_per_example.float())
     cos_sim_per_unit = asnumpy(cos_sim_per_unit.float())
 
-    model_names = [f"SAE {i}" for i in range(2)]
+    model_names = [f"SED {i}" for i in range(2)]
     dfs = []
 
     dfs.append(
         pd.DataFrame(cos_sim_per_example, columns=model_names)
-        .melt(var_name="SAE", value_name="Value")
+        .melt(var_name="SED", value_name="Value")
         .assign(Type="Examples", Metric="Cosine Similarity")
     )
 
     dfs.append(
         pd.DataFrame(cos_sim_per_unit, columns=model_names)
-        .melt(var_name="SAE", value_name="Value")
+        .melt(var_name="SED", value_name="Value")
         .assign(Type="Units", Metric="Cosine Similarity")
     )
 
     dfs.append(
         pd.DataFrame(r2_per_example, columns=model_names)
-        .melt(var_name="SAE", value_name="Value")
+        .melt(var_name="SED", value_name="Value")
         .assign(Type="Examples", Metric="R²")
     )
 
     dfs.append(
         pd.DataFrame(r2_per_unit, columns=model_names)
-        .melt(var_name="SAE", value_name="Value")
+        .melt(var_name="SED", value_name="Value")
         .assign(Type="Units", Metric="R²")
     )
 
@@ -522,7 +515,7 @@ def eval_model(
         data=r2_df,
         x="Type",
         y="Value",
-        hue="SAE",
+        hue="SED",
         show_legend=False
     )
     # Prettify axes.
@@ -538,7 +531,7 @@ def eval_model(
         data=cos_sim_df,
         x="Type",
         y="Value",
-        hue="SAE",
+        hue="SED",
         show_legend=False
     )
     # Prettify axes.
