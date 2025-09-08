@@ -1,5 +1,5 @@
 [project]
-name = "mini"
+name = "nldisco"
 authors = [{name = "jai", email = "jkbhagatio@gmail.com"}]
 description = "Mech Interp for Neural Interp"
 requires-python = "==3.9"
@@ -21,7 +21,7 @@ extra-index-urls = [
 ]
 
 [tool.pixi.pypi-dependencies]
-mini = { path = "." , editable = true }
+nldisco = { path = "." , editable = true }
 allensdk = { version = ">=2.16" }
 jax = { version = ">=0.4.21" }
 pip = "*"
