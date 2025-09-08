@@ -11,14 +11,15 @@ import wandb
 from einops import asnumpy, einsum, rearrange, reduce, repeat
 from jaxtyping import Float, Int, Bool
 from matplotlib import pyplot as plt
+from matplotlib.figure import Figure
 import seaborn as sns
 from sklearn.metrics import r2_score
 from torch import bfloat16, nn, Tensor
 from torch.nn import functional as F
 from tqdm import tqdm
 
-from mini import plot as mp
-from mini.util import vec_r2
+from nldisco import plot as nplot
+from nldisco.util import vec_r2
 
 # <s> SAE class config
 
@@ -326,7 +327,7 @@ def optimize(
                     l0_history.append(
                         {"step": step, "mean": l0_mean, "std": l0_std, "alpha": alpha}
                     )
-                    l0_fig = mp.plot_l0_stats(l0_history)
+                    l0_fig = nplot.plot_l0_stats(l0_history)
                     wandb.log({"l0_std_vs_mean": l0_fig, "step": step})
 
     return data_log
@@ -336,12 +337,13 @@ def eval_model(
     spk_cts: Int[Tensor, "n_examples n_units"],
     sae: Sae,
     batch_sz: int = 1024,
-    log_wandb: bool = False
+    log_wandb: bool = False,
 ) -> Tuple[
     # 4d topk acts info (instance, example, feature, act_val)
+    Figure,
     Float[Tensor, "(n_recon_examples n_inst max_topk) 4"],
     Float[Tensor, "n_recon_examples n_inst n_units"],  # reconstructions
-    Float[Tensor, "n_units n_inst"],  # R² per unit
+    Float[np.ndarray, "n_units n_inst"],  # R² per unit
     Float[Tensor, "n_recon_examples n_inst"],  # R² per example
     Float[Tensor, "n_units n_inst"],  # Cosine similarity per unit
     Float[Tensor, "n_recon_examples n_inst"],  # Cosine similarity per example
@@ -361,6 +363,7 @@ def eval_model(
     n_units = spk_cts.shape[1]
     n_examples = spk_cts.shape[0]
     valid_starts = n_examples - sae.cfg.seq_len + 1
+    d_sae = max(sae.cfg.dsae_topk_map.keys())
     n_steps = valid_starts // batch_sz  # total number of examples
     n_recon_examples = n_steps * batch_sz
     
@@ -368,6 +371,7 @@ def eval_model(
 
     # Create placeholders to store metrics.
     l0 = t.zeros((n_recon_examples, n_inst), dtype=t.float32, device=device)
+    latent_activity_count = t.zeros((n_inst, d_sae), dtype=t.float32, device=device)
     recon_spk_cts = t.empty((n_recon_examples, n_inst, n_units), dtype=sae.cfg.dtype, device=device)
     r2_per_example = t.empty((n_recon_examples, n_inst), dtype=sae.cfg.dtype, device=device)
     cos_sim_per_example = t.empty((n_recon_examples, n_inst), dtype=sae.cfg.dtype, device=device)
@@ -385,6 +389,9 @@ def eval_model(
             recon_levels, topk_acts_levels, _acts_raw = sae(spike_count_seqs)
             nonzero_mask = (topk_acts_levels[-1] > 0)
             cur_l0 = reduce(nonzero_mask.float(), "batch inst sae_feat -> batch inst", "sum")
+            latent_activity_count += reduce(
+                nonzero_mask.float(), "batch inst sae_feat -> inst sae_feat", "sum"
+            )
             # Store results.
             l0[start_idxs] = cur_l0
             recon_spk_cts[start_idxs] = recon_levels[-1]
@@ -428,32 +435,48 @@ def eval_model(
 
     # <ss> Create plots.
 
-    fig, (ax_l0, ax_r2, ax_cos) = plt.subplots(1, 3, figsize=(18, 6), constrained_layout=True)
+    fig, ((ax_l0, ax_density), (ax_r2, ax_cos)) = plt.subplots(
+        2, 2, figsize=(12, 10), constrained_layout=True
+    )
     sns.set_theme(style="whitegrid")
     
     # <sss> L0 boxplot.
     
     l0_data = [asnumpy(l0[:, i]) for i in range(n_inst)]
-    mp.box_strip_plot(
+    nplot.box_strip_plot(
         ax=ax_l0,
         data=l0_data,
         show_legend=True
     )
-    # Update width of box plot and size and alpha of strip plot.
-    # for box in ax_l0.artists:
-    #     box.set_width(0.4)  # Change boxplot width
-    # for collection in ax_l0.collections:
-    #     if isinstance(collection, plt.matplotlib.collections.PathCollection):
-    #         collection.set_sizes([4])
-    #         collection.set_alpha(0.4)
-    # Prettify axes.
     ax_l0.set_xlabel("")
     ax_l0.set_ylabel("")
     ax_l0.set_xticks(range(n_inst))
-    ax_l0.set_xticklabels([f"SAE {i}" for i in range(n_inst)])
+    ax_l0.set_xticklabels([f"Model {i}" for i in range(n_inst)])
     ax_l0.set_yticks(np.arange(0, l0.max().item() + 1, 10))
-    ax_l0.set_title("L0 of SAE features")
+    ax_l0.set_title("L0 of model latents")
+    ax_l0.grid(axis="x")
     
+    # </sss>
+
+    # <sss> Latent density histogram.
+    
+    latent_activity_frac = latent_activity_count / n_recon_examples
+    for i in range(n_inst):
+        data = asnumpy(latent_activity_frac[i])
+        ax_density.hist(
+            data,
+            bins=d_sae // 5,
+            alpha=0.6,
+            weights=np.ones_like(data) / len(data),  # Normalize by total number of latents
+        )
+    ax_density.set_title("Latent activity density")
+    ax_density.set_xlabel("Fraction of time active")
+    ax_density.set_ylabel("Fraction of latents")
+    ax_density.set_xticks(np.arange(0, 1.05, 0.05))
+    ax_density.set_xlim(-0.025, 1.025)
+    plt.setp(ax_density.get_xticklabels(), rotation=-40, ha="left")  # rotation_mode="anchor"
+    ax_density.legend()
+
     # </sss>
 
     # <sss> Format and plot R² and Cosine Similarity data.
@@ -494,7 +517,7 @@ def eval_model(
     cos_sim_df = df[df["Metric"] == "Cosine Similarity"]
     r2_df = df[df["Metric"] == "R²"]
     
-    mp.box_strip_plot(
+    nplot.box_strip_plot(
         ax=ax_r2,
         data=r2_df,
         x="Type",
@@ -507,9 +530,10 @@ def eval_model(
     ax_r2.set_ylabel("")
     ax_r2.set_ylim(-1.0, 1.0)
     ax_r2.set_yticks(np.arange(-1.0, 1.1, 0.1))
-    ax_r2.set_title("R² of SAE reconstructions")
+    ax_r2.set_title("R² of reconstructions")
+    ax_r2.grid(axis="x")
 
-    mp.box_strip_plot(
+    nplot.box_strip_plot(
         ax=ax_cos,
         data=cos_sim_df,
         x="Type",
@@ -522,7 +546,8 @@ def eval_model(
     ax_cos.set_ylabel("")
     ax_cos.set_ylim(0.1, 1.0)
     ax_cos.set_yticks(np.arange(0.1, 1.1, 0.1))
-    ax_cos.set_title("Cosine Similarity of true and reconstructed spike counts")
+    ax_cos.set_title("Cosine Similarity of reconstructions")
+    ax_cos.grid(axis="x")
     
     # </sss>
 
@@ -544,7 +569,7 @@ def eval_model(
             "cos_per_unit_mean": np.mean(cos_sim_per_unit),
         })
 
-    return topk_acts_4d, recon_spk_cts, r2_per_unit, r2_per_example, cos_sim_per_unit, cos_sim_per_example
+    return fig, topk_acts_4d, recon_spk_cts, r2_per_unit, r2_per_example, cos_sim_per_unit, cos_sim_per_example
 
     # </ss>
 

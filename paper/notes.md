@@ -142,7 +142,7 @@ Ideally we'll have clean units. We used ks3.5 labeled good untis and had an addi
 Right now, we take one timebin in, and try to reconstruct the same timebin. We could also take multiple timebins in, and try to reconstruct various of these timebins, because longer spiking history may be meaningful for reconstruction / prediction ? Have the code for this and have tested it, but haven't gotten good results with seq_len > 1. Probably worth looking more into.
 
 
-## Methods to compare vs. MINI
+## Methods to compare vs. NLDisco
 
 ### (d)PCA 
 

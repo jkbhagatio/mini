@@ -29,8 +29,8 @@ import wandb
 import yaml
 from wandb.sdk.lib.service_connection import WandbServiceNotOwnedError
 
-from mini import train as mt
-from mini.plot import firing_rate_hist
+from nldisco import train as nt
+from nldisco.plot import firing_rate_hist
 
 
 if __name__ == "__main__":
@@ -115,24 +115,24 @@ if __name__ == "__main__":
         log_freq = n_steps // n_epochs // 2
         dead_neuron_window = n_steps // n_epochs // 2
         if "msle" in wandb.config.loss_fn:
-            loss_fn = mt.msle
+            loss_fn = nt.msle
             tau = float(wandb.config.loss_fn.split("_")[-1])
         else:
-            loss_fn = mt.mse
+            loss_fn = nt.mse
             tau = None
         
         # Create the SAE cfg and run training and evaluation.
         dsae_map = wandb.config.dsae_topk_level_map
         dsae_map = {int(k): int(v) for k, v in dsae_map.items()}
 
-        sae_cfg = mt.SaeConfig(
+        sae_cfg = nt.SaeConfig(
             n_input_ae=spk_cts.shape[1],
             dsae_topk_level_map=dsae_map,
             seq_len=wandb.config.seq_len,
             n_instances=wandb.config.n_instances,
         )
-        sae = mt.Sae(sae_cfg).to(device)
-        _data_log = mt.optimize(  # train model
+        sae = nt.Sae(sae_cfg).to(device)
+        _data_log = nt.optimize(  # train model
             spk_cts=spk_cts,
             sae=sae,
             loss_fn=loss_fn,
@@ -146,7 +146,7 @@ if __name__ == "__main__":
             plot_l0=True,
             tau=tau
         )
-        mt.eval_model(spk_cts, sae, batch_sz=1024, log_wandb=True)  # evaluate model
+        nt.eval_model(spk_cts, sae, batch_sz=1024, log_wandb=True)  # evaluate model
         
         run_duration = time.time() - start_time
         wandb.log({"run_duration": run_duration})

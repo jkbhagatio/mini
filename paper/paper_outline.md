@@ -1,6 +1,6 @@
 ## Things to mention
 
-- Emphasize that MINI:
+- Emphasize that NLDisco:
 
     - Simple to understand, implement, and user-friendly (highlight in paper)
 
@@ -42,7 +42,7 @@
 
     - Artificial dataset (e.g. that used in CEBRA paper)
 
-      - Use RatInABox or NeuralPlayground or OurOwnMethod to construct ground-truth interpretable latents, and show that MINI can find them all
+      - Use RatInABox or NeuralPlayground or OurOwnMethod to construct ground-truth interpretable latents, and show that NLDisco can find them all
     
         - If can find all or almost all, then we're good with this alone! If not, then we need to show comparison to other methods to show it's not significantly worse. First option is ideal!
 
@@ -54,7 +54,7 @@
 
 - Methods comparisons in main results
 
-    - To do a fair comparison with MINI's main goal of unsupervised interpretable latent discovery, we detail comparisons [Methods Comparisons Table] with paper-published methods that:
+    - To do a fair comparison with NLDisco's main goal of unsupervised interpretable latent discovery, we detail comparisons [Methods Comparisons Table] with paper-published methods that:
         1. Claim an interpretable latent space among their primary goals (as opposed to e.g. only strong decoding performance)
         2. Don't require multimodal nor trial-structured data
         3. Publicly share the application of their method to the Churchland MC_Maze dataset. 
@@ -100,7 +100,7 @@
     - Neural data -> explicit latent space vs. extracting interpretable latents
     - (Optional to include, but ideally yes, space permitting)
 
-1. MINI Pipeline
+1. NLDisco Pipeline
 
 2. Our model arch: MSAE variant
 
@@ -130,7 +130,7 @@
   
   - Existing methods have many limitations, particularly in regards to interpretability of latent spaces
 
-- How MINI addresses these limitations + can be used with virtually any neural recording modality
+- How NLDisco addresses these limitations + can be used with virtually any neural recording modality
 
 - Latent space vs. interpretable latents overview: we just care about interpretable latents
 
